@@ -43,3 +43,47 @@ https://github.com/lucasuf/SpeakerTracker
 https://github.com/jopedroliveira/speech_recog_uc
 
 https://github.com/dengjunquan/DoA-Estimation-MUSIC-ESPRIT
+
+
+
+### Datasets
+
+http://deeplearning.net/datasets/
+
+http://www.voxforge.org/
+
+http://www.speech.cs.cmu.edu/databases/micarray/index.html
+
+https://team.inria.fr/perception/nard/
+
+https://www.kaggle.com/c/tensorflow-speech-recognition-challenge/data
+
+http://www.cs.tut.fi/~heittolt/datasets
+
+<https://datashare.is.ed.ac.uk/download/DS_10283_2791.zip>
+
+https://catalog.ldc.upenn.edu/LDC2000S87
+
+https://research.google.com/audioset/dataset/speech.html
+
+https://github.com/dingzeyuli/SpEAR-speech-database
+
+https://ecs.utdallas.edu/loizou/speech/noizeus/
+
+https://ccrma.stanford.edu/~gautham/Site/daps.html
+
+http://www.openslr.org/resources.php
+
+https://datashare.is.ed.ac.uk/handle/10283/2826
+
+http://www.openslr.org/17/
+
+https://sisec.inria.fr/sisec-2015/2015-two-channel-mixtures-of-speech-and-real-world-background-noise/
+
+https://arxiv.org/abs/1808.00606
+
+### Cocktail Recording
+
+http://vis.uky.edu/distributed-audio-lab/experimental-data-archive/cocktail-party-recordings/
+
+*** THIS IS SO GOOD *** https://looking-to-listen.github.io/
