@@ -1,10 +1,11 @@
+from typing import Dict
 from .parameter import *
 
 
-class ParameterSet:
+class ParameterHolder:
 
     def __init__(self):
-        self.__parameters = dict()
+        self.__parameters: Dict[str, Parameter] = {}
         super().__init__()
 
     def __len__(self):
@@ -25,8 +26,13 @@ class ParameterSet:
 
     def insert(self, parameter: Parameter):
         if self.contains(parameter.name):
-            raise KeyError("Key already used")
+            raise KeyError("Key %s previously used" % parameter.name)
         self.parameters[parameter.name] = parameter
+
+    def insert(self, name: str, default):
+        if self.contains(name):
+            raise KeyError("Key %s previously used" % name)
+        self.parameters[name] = Parameter(name, default)
 
     def delete(self, key: str):
         self.__delitem__(key)
