@@ -9,10 +9,8 @@ class ParameterDescriptor:
         super().__init__()
 
     def __str__(self):
-        return "{ name : %s, description: %s, meta : %s, optional : %r } " % (self.name,
-                                                                              self.description,
-                                                                              self.meta.__name__,
-                                                                              self.optional)
+        return '{ "name" : "%s", "description": "%s", "meta" : "%s", "default":  "%s", "optional" : "%r" } ' \
+               % (self.name, self.description, self.meta.__name__, self.default, self.optional)
 
     @property
     def optional(self) -> bool:
@@ -32,7 +30,7 @@ class ParameterDescriptor:
 
     @property
     def default(self) -> object:
-        return self.default
+        return self.__default
 
     @name.setter
     def name(self, value: str):

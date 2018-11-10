@@ -7,7 +7,9 @@ class Parameter:
         super().__init__()
 
     def __str__(self) -> str:
-        return "{%s : % s} " % (self.name, self.value)
+        return '{"name" : "%s", "meta" : "%s", "value" : "%s" }' % (self.name,
+                                                                    self.meta.__name__,
+                                                                    self.value)
 
     @property
     def name(self) -> str:

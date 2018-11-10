@@ -1,5 +1,6 @@
 from typing import Dict
 from .parameter import Parameter
+from ..util import serializer
 
 
 class ParameterHolder:
@@ -26,7 +27,7 @@ class ParameterHolder:
         return key in self.parameters
 
     def __str__(self) -> str:
-        return str(self.__parameters.values())
+        return serializer.serialize(self.parameters)
 
     def insert(self, name: str, default: object):
         self.__setitem__(name, Parameter(name, default))
