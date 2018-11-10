@@ -1,9 +1,9 @@
 from datetime import date
 from abc import ABC, abstractmethod
 from typing import Dict
-from .parameter_descriptor import ParameterDescriptor
-from .parameter_holder import ParameterHolder
-from .parameter import Parameter
+from smartcore.core.parameter_descriptor import ParameterDescriptor
+from smartcore.core.parameter_holder import ParameterHolder
+from smartcore.core.parameter import Parameter
 
 
 class Algorithm(ABC):
@@ -25,10 +25,10 @@ class Algorithm(ABC):
     def _value(self, key: str):
         return self.parameters[key].value
 
-    def _add_descriptor(self, name: str, description: str, default: object, optional: bool = False):
+    def _add_descriptor(self, name: str, description: str, meta: type, default: object = None, optional: bool = False):
         if name in self.descriptors:
             raise KeyError("Descriptor %s already defined" % name)
-        self.descriptors[name] = ParameterDescriptor(name, description, default, optional)
+        self.descriptors[name] = ParameterDescriptor(name, description, meta,  default, optional)
 
     def _delete_descriptor(self, name: str):
         if name not in self.descriptors:

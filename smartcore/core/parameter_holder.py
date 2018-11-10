@@ -1,6 +1,6 @@
 from typing import Dict
-from .parameter import Parameter
-from ..util import serializer
+from smartcore.core.parameter import Parameter
+from smartcore.util import serializer
 
 
 class ParameterHolder:
@@ -44,5 +44,8 @@ class ParameterHolder:
 
     @parameters.setter
     def parameters(self, parameters):
+        if parameters is None:
+            return
+
         for key, value in parameters.iteritems():
             self.parameters[key] = Parameter(key, value)

@@ -1,6 +1,6 @@
 from scipy import signal
 from numpy import ndarray
-from python.smartcore.core.algorithm import Algorithm
+from smartcore.core.algorithm import Algorithm
 
 
 class Window(Algorithm):
@@ -8,7 +8,7 @@ class Window(Algorithm):
     def __init__(self, parameters: dict = None):
         super().__init__("Convolver",
                          "Computes the convolution of two input signals.")
-        self.__window = ndarray()
+        self.__window = None
         self.parameters = parameters
 
     def _configure(self):

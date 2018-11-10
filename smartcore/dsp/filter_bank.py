@@ -1,6 +1,6 @@
 from numpy import ndarray
-from python_speech_features import fbank, logfbank
-from python.smartcore.core.algorithm import Algorithm
+from python_speech_features import fbank
+from smartcore.core.algorithm import Algorithm
 
 
 class FilterBank(Algorithm):

@@ -1,9 +1,12 @@
 class ParameterDescriptor:
 
-    def __init__(self, name: str, description: str, default: object, optional: bool = False) -> None:
+    def __init__(self, name: str, description: str, meta: type, default: object = None, optional: bool = False) -> None:
+        if meta is not type(default):
+            raise ValueError("Expecting default value of type %s but %s is provided"
+                             % (meta.__name__, type(default).__name__))
         self.__name = name
         self.__description = description
-        self.__meta = type(default)
+        self.__meta = meta
         self.__default = default
         self.__optional = optional
         super().__init__()

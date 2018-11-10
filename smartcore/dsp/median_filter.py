@@ -1,6 +1,6 @@
 from scipy import signal
 from numpy import ndarray
-from python.smartcore.core.algorithm import Algorithm
+from smartcore.core.algorithm import Algorithm
 
 
 class MedianFilter(Algorithm):

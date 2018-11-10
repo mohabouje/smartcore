@@ -1,17 +1,17 @@
 from numpy import ndarray
 from acoustics import cepstrum
-from python.smartcore.core.algorithm import Algorithm
+from smartcore.core.algorithm import Algorithm
 
 
-class Windower(Algorithm):
+class Cepstrum(Algorithm):
 
-    def __init__(self, parameters: dict = None):
+    def __init__(self, nfft=None):
         super().__init__("Cepstrum",
                          "Computes the cepstrum of the input signal.")
-        self.parameters = parameters
+        self.nfft: int = nfft
 
     def _configure(self):
-        self._add_descriptor("nfft", "Length of the FFT used", int(0), True)
+        self._add_descriptor("nfft", "Length of the FFT used", type(int))
 
     def run(self, x: ndarray):
         nfft = self._value("nfft")

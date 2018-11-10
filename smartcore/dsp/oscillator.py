@@ -1,6 +1,6 @@
 from scipy import signal
 import numpy as np
-from python.smartcore.core.algorithm import Algorithm
+from smartcore.core.algorithm import Algorithm
 
 
 class Oscillator(Algorithm):

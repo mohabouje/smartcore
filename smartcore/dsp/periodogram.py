@@ -1,9 +1,9 @@
 from scipy import signal
 from numpy import ndarray
-from python.smartcore.core.algorithm import Algorithm
+from smartcore.core.algorithm import Algorithm
 
 
-class Windower(Algorithm):
+class Periodogram(Algorithm):
 
     def __init__(self, parameters: dict = None):
         super().__init__("Periodogram",

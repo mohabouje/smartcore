@@ -1,6 +1,6 @@
 from scipy import signal
 from numpy import ndarray, append
-from python.smartcore.core.algorithm import Algorithm
+from smartcore.core.algorithm import Algorithm
 
 
 class PreEmphasis(Algorithm):
