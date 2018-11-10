@@ -8,31 +8,28 @@ class ParameterHolder:
         self.__parameters: Dict[str, Parameter] = {}
         super().__init__()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.parameters)
 
-    def __getitem__(self, key: str):
+    def __setitem__(self, key: str, value: Parameter):
+        if self.contains(key):
+            raise KeyError("Key %s previously used" % key)
+        self.parameters[key] = value
+
+    def __getitem__(self, key: str) -> Parameter:
         return self.parameters[key]
 
-    def __delitem__(self, key: str):
+    def __delitem__(self, key: str) -> None:
         self.parameters.pop(key, None)
 
-    def __contains__(self, key: str):
+    def __contains__(self, key: str) -> bool:
         return key in self.parameters
 
-    def __str__(self):
-        for v in self.parameters.values():
-            print(str(v))
+    def __str__(self) -> str:
+        return str(self.__parameters.values())
 
-    def insert(self, parameter: Parameter):
-        if self.contains(parameter.name):
-            raise KeyError("Key %s previously used" % parameter.name)
-        self.parameters[parameter.name] = parameter
-
-    def insert(self, name: str, default):
-        if self.contains(name):
-            raise KeyError("Key %s previously used" % name)
-        self.parameters[name] = Parameter(name, default)
+    def insert(self, name: str, default: object):
+        self.__setitem__(name, Parameter(name, default))
 
     def delete(self, key: str):
         self.__delitem__(key)
@@ -46,4 +43,5 @@ class ParameterHolder:
 
     @parameters.setter
     def parameters(self, parameters):
-        self.__parameters = parameters
+        for key, value in parameters.iteritems():
+            self.parameters[key] = Parameter(key, value)

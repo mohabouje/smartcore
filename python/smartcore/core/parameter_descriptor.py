@@ -51,7 +51,7 @@ class ParameterDescriptor:
         self.__meta = value
 
     @default.setter
-    def default(self, value: Any):
+    def default(self, value: object):
         if not isinstance(value, self.__meta):
             raise TypeError("Expecting type " + self.__meta.__name__)
         self.__default = value
