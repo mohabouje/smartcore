@@ -4,9 +4,10 @@ from python.smartcore.core.algorithm import Algorithm
 
 class Decimator(Algorithm):
 
-    def __init__(self):
+    def __init__(self, parameters: dict = None):
         super().__init__("Convolver",
                          "Computes the convolution of two input signals.")
+        self.parameters = parameters
 
     def _configure(self):
         self._add_descriptor("q", "The downsampling factor", int(0), False)

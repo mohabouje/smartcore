@@ -4,9 +4,10 @@ from python.smartcore.core.algorithm import Algorithm
 
 class Correlator(Algorithm):
 
-    def __init__(self):
+    def __init__(self, parameters: dict = None):
         super().__init__("Correlator",
                          "Computes the correlation of two input signals.")
+        self.parameters = parameters
 
     def _configure(self):
         self._add_descriptor("mode", "String indicating the size of the output [full, valid, same]", "full", True)

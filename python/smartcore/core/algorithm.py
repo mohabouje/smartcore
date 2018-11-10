@@ -66,6 +66,9 @@ class Algorithm(ABC):
         self._validate_parameters()
         return self.__initialized
 
+    def reset(self):
+        pass
+
     @property
     def name(self) -> str:
         return self.__name

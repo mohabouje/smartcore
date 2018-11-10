@@ -4,9 +4,10 @@ from python.smartcore.core.algorithm import Algorithm
 
 class Convolver(Algorithm):
 
-    def __init__(self):
+    def __init__(self, parameters: dict = None):
         super().__init__("Convolver",
                          "Computes the convolution of two input signals.")
+        self.parameters = parameters
 
     def _configure(self):
         self._add_descriptor("mode", "String indicating the size of the output [full, valid, same]", "full", True)
