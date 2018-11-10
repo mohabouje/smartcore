@@ -1,5 +1,5 @@
 from typing import Dict
-from .parameter import *
+from .parameter import Parameter
 
 
 class ParameterHolder:

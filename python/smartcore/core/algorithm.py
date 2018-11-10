@@ -1,6 +1,6 @@
+import datetime
 from abc import ABC, abstractmethod
 from typing import Dict
-import datetime
 from .parameter_descriptor import ParameterDescriptor
 from .parameter_holder import ParameterHolder
 from .parameter import Parameter
@@ -9,7 +9,7 @@ from .parameter import Parameter
 class Algorithm(ABC):
 
     @abstractmethod
-    def __iter__(self, name: str, description: str, version: str, creation_date: datetime = None):
+    def __init__(self, name: str, description: str, version: str, creation_date: datetime = None):
         self.__name = name
         self.__description = description
         self.__creation_date: datetime = creation_date
@@ -19,7 +19,6 @@ class Algorithm(ABC):
         self.__initialized = False
         self.__timestamp: int = 0
         self.__configure()
-        super.__init__()
 
     @abstractmethod
     def initialize(self) -> None:
@@ -97,4 +96,3 @@ class Algorithm(ABC):
         self.__initialized = not wrong and not missed
         if not self.__initialized:
             raise AttributeError("Missing parameters: " + repr(missed) + "\n Wrong parameters: " + repr(wrong))
-
