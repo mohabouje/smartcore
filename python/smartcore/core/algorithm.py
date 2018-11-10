@@ -61,10 +61,9 @@ class Algorithm(ABC):
     def _configure(self):
         pass
 
-    def initialize(self) -> bool:
+    def initialize(self):
         self._configure()
         self._validate_parameters()
-        return self.__initialized
 
     def reset(self):
         pass

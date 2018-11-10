@@ -1,4 +1,5 @@
 from scipy import signal
+from numpy import ndarray
 from python.smartcore.core.algorithm import Algorithm
 
 
@@ -15,6 +16,6 @@ class Decimator(Algorithm):
         self._add_descriptor("type", "Specifies the type of lowpass filter [irr, fir]", "iir", True)
         self._add_descriptor("zero_phase", "If true, prevents phase shift", True, True)
 
-    def run(self, x):
+    def run(self, x: ndarray):
         return signal.decimate(x, q=self._value("q"), n=self._value("n"),
                                ftype=self._value("type"), zero_phase=self._value("zero_phase"))

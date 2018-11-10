@@ -1,4 +1,5 @@
 from scipy import signal
+from numpy import ndarray
 from python.smartcore.core.algorithm import Algorithm
 
 
@@ -12,5 +13,5 @@ class DeConvolver(Algorithm):
     def _configure(self):
         pass
 
-    def run(self, x, impulse_response):
+    def run(self, x: ndarray, impulse_response: ndarray):
         return signal.convolve(x, impulse_response)

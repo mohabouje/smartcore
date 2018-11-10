@@ -21,20 +21,19 @@ class Filter(Algorithm):
         self._add_descriptor("analog", "When True, return an analog filter.", True, True)
         self._add_descriptor("type", "Type of filter: [butter, cheby1, cheby2, ellip, bessel]", "ellip", True)
 
-    def initialize(self) -> bool:
-        initialized = super().initialize()
+    def initialize(self):
+        super().initialize()
         self.__b, self.__a = signal.iirdesign(wp=self._value("wp"),
                                               ws=self._value("ws"),
                                               gpass=self._value("gpass"),
                                               gstop=self._value("gstop"),
                                               analog=self._value("analog"),
                                               ftype=self._value("type"))
-        return initialized
 
     def reset(self):
         self.__zf = None
 
-    def run(self, x):
+    def run(self, x: ndarray):
         output, self.__zf = signal.lfilter(self.__a, self.__b, x, zi=self.__zf)
         return output
 

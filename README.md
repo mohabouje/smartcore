@@ -52,7 +52,7 @@ http://deeplearning.net/datasets/
 
 http://www.voxforge.org/
 
-http://www.speech.cs.cmu.edu/databases/micarray/index.html
+http://www.speech.cs.cmu.edu/databases/micndarray/index.html
 
 https://team.inria.fr/perception/nard/
 
@@ -85,5 +85,8 @@ https://arxiv.org/abs/1808.00606
 ### Cocktail Recording
 
 http://vis.uky.edu/distributed-audio-lab/experimental-data-archive/cocktail-party-recordings/
+
+pip install python_speech_features
+
 
 *** THIS IS SO GOOD *** https://looking-to-listen.github.io/
