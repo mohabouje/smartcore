@@ -5,15 +5,11 @@ from smartcore.core.algorithm import Algorithm
 
 class ReSampler(Algorithm):
 
-    def __init__(self, parameters: dict = None):
-        super().__init__("DeSampler",
-                         "Resamples a signal using polyphase filtering.")
-        self.parameters = parameters
+    def __init__(self, up: int, down: int, window: str = "hamming", name: str = "", timestamp: int = 0):
+        self.up: int = up
+        self.down: int = down
+        self.window: str = window
+        super().__init__(name=name, timestamp=timestamp)
 
-    def _configure(self):
-        self._add_descriptor("up", "The up-sampling factor", int(0), False)
-        self._add_descriptor("down", "The down-sampling factor", int(0), False)
-        self._add_descriptor("window", "Specifies the window applied to the signal", "hamming", True)
-
-    def run(self, x: ndarray):
-        return signal.resample_poly(x, up=self._value("up"), down=self._value("down"), window=self._value("window"))
+    def run(self, x):
+        return signal.resample_poly(x, up=self.up, down=self.down, window=self.window)

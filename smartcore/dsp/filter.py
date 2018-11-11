@@ -2,38 +2,30 @@ from scipy import signal
 from numpy import ndarray
 from smartcore.core.algorithm import Algorithm
 
-
 class Filter(Algorithm):
 
-    def __init__(self, parameters: dict = None):
-        super().__init__("Filter",
-                         "Filters the input signal with the designed IIR filter")
-        self.__b = ndarray()
-        self.__a = ndarray()
+    def __init__(self, wp, ws, gpass: float, gstop: float, analog: bool = True,
+                 filter_type: str = "ellip", name: str = "", timestamp: int = 0):
+        self.wp = wp
+        self.ws = ws
+        self.gpass: float = gpass
+        self.gstop: float = gstop
+        self.analog: bool = analog
+        self.filter_type: str = filter_type
+        self.__b = None
+        self.__a = None
         self.__zf = None
-        self.parameters = parameters
-
-    def _configure(self):
-        self._add_descriptor("wp", "Passband edge frequencies", ndarray(), False)
-        self._add_descriptor("ws", "Stopband edge frequencies", ndarray(), False)
-        self._add_descriptor("gpass", "The maximum loss in the passband (dB)", float(), False)
-        self._add_descriptor("gstop", "The minimum attenuation in the stopband (dB).", float(), False)
-        self._add_descriptor("analog", "When True, return an analog filter.", True, True)
-        self._add_descriptor("type", "Type of filter: [butter, cheby1, cheby2, ellip, bessel]", "ellip", True)
+        super().__init__(name=name, timestamp=timestamp)
 
     def initialize(self):
+        self.__b, self.__a, __ = signal.iirdesign(wp=self.wp, ws=self.ws, gpass=self.gpass, gstop=self.gstop,
+                                                  analog=self.analog, ftype=self.filter_type)
         super().initialize()
-        self.__b, self.__a = signal.iirdesign(wp=self._value("wp"),
-                                              ws=self._value("ws"),
-                                              gpass=self._value("gpass"),
-                                              gstop=self._value("gstop"),
-                                              analog=self._value("analog"),
-                                              ftype=self._value("type"))
 
     def reset(self):
         self.__zf = None
 
-    def run(self, x: ndarray):
+    def run(self, x):
         output, self.__zf = signal.lfilter(self.__a, self.__b, x, zi=self.__zf)
         return output
 

@@ -1,17 +1,12 @@
-from scipy import signal
-from numpy import ndarray, append
 from smartcore.core.algorithm import Algorithm
+from speechpy.processing import preemphasis
 
 
 class PreEmphasis(Algorithm):
 
-    def __init__(self, parameters: dict = None):
-        super().__init__("PreEmphasis",
-                         "Perform preemphasis on the input signal")
-        self.parameters = parameters
+    def __init__(self, coefficient: float, name: str = "", timestamp: int = 0):
+        self.coefficient: float = coefficient
+        super().__init__(name=name, timestamp=timestamp)
 
-    def _configure(self):
-        self._add_descriptor("coeff", "The preemphasis coefficient. Default is 0.95.", float(0.95), False)
-
-    def run(self, x: ndarray):
-        return append(x[0], x[1:] - self._value("coeff") * signal[:-1])
+    def run(self, x):
+        return preemphasis(signal=x, cof=self.coefficient)
