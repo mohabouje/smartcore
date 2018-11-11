@@ -1,6 +1,6 @@
 from smartcore.core.algorithm import Algorithm
+import PySide2  ## this will force pyqtgraph to use PySide instead of PyQt4
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore, QtWidgets
 
 
 class LinearChart(Algorithm):
@@ -14,30 +14,32 @@ class LinearChart(Algorithm):
                  name: str = "",
                  timestamp: int = 0):
         super().__init__(name=name, timestamp=timestamp)
-        self.x = None
-        self.y = None
+        pg.setConfigOptions(antialias=False)
+
+        self.__x = None
+        self.__y = None
         self.__interval = interval
         self.__win = pg.GraphicsWindow()
         self.__win.resize(width, height)
+        self.__win.setWindowTitle(title)
         self.__win.show()
-
-        self.__layout = QtWidgets.QVBoxLayout()
-        self.__win.setLayout(self.__layout)
+        self.__win.raise_()
+        pg.setConfigOptions(antialias=True)
 
         self.__plt = self.__win.addPlot(title=title)
         self.__plt.resize(width, height)
-        self.__plt.showGrid(x=True, y=True)
         self.__plt.setLabel('left', y_label, 'V')
         self.__plt.setLabel('bottom', x_label, 's')
-        self.__curve = self.__plt.plot([], pen=(255, 0, 0))
-
-        self.__timer = QtCore.QTimer()
-        self.__timer.timeout.connect(self.__update)
-        self.__timer.start(self.__interval)
+        self.__plt.setDownsampling(auto=True, mode='peak')
+        self.__plt.setClipToView(True)
+        self.__plt.showGrid(x=True, y=True)
+        self.__curve = self.__plt.plot(pen='#00A3E0', title=title)
 
     def run(self, x, y):
-        self.x = x
-        self.y = y
+        self.__x = x
+        self.__y = y
+        self.update()
 
-    def __update(self):
-        self.__curve.setData(self.x, self.y)
+    def update(self):
+        self.__curve.setData(self.__x, self.__y)
+        pg.QtGui.QGuiApplication.instance().processEvents()
