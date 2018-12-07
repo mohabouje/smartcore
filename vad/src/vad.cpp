@@ -29,7 +29,8 @@ struct VAD::Pimpl {
     }
 
     int sampleRate() const {
-        return fvad_get_sample_rate(processor_);
+        // TODO: implement a return variable
+        return 0;
     }
 
     bool process(const std::int16_t *samples, std::size_t numberSamples) {

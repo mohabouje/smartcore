@@ -1,14 +1,14 @@
 /*
  *  Copyright (c) 2016 The WebRTC project authors. All Rights Reserved.
  *
- *  Use of this src code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the src
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
  *  tree. An additional intellectual property rights grant can be found
  *  in the file PATENTS.  All contributing project authors may
- *  be found in the AUTHORS file in the root of the src tree.
+ *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "../../include/signal_processing/spl_inl.h"
+#include "spl_inl.h"
 
 
 // Table used by WebRtcSpl_CountLeadingZeros32_NotBuiltin. For each uint32_t n

@@ -1,11 +1,11 @@
 /*
  *  Copyright (c) 2011 The WebRTC project authors. All Rights Reserved.
  *
- *  Use of this src code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the src
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
  *  tree. An additional intellectual property rights grant can be found
  *  in the file PATENTS.  All contributing project authors may
- *  be found in the AUTHORS file in the root of the src tree.
+ *  be found in the AUTHORS file in the root of the source tree.
  */
 
 
@@ -17,7 +17,7 @@
  *
  */
 
-#include "../../include/signal_processing/signal_processing_library.h"
+#include "signal_processing_library.h"
 
 int32_t WebRtcSpl_DivW32W16(int32_t num, int16_t den)
 {

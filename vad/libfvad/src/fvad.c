@@ -2,14 +2,14 @@
  *  Copyright (c) 2012 The WebRTC project authors. All Rights Reserved.
  *  Copyright (c) 2016 Daniel Pirch.
  *
- *  Use of this src code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the src
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
  *  tree. An additional intellectual property rights grant can be found
  *  in the file PATENTS.  All contributing project authors may
- *  be found in the AUTHORS file in the root of the src tree.
+ *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "fvad.h"
+#include "../include/fvad.h"
 
 #include <stdlib.h>
 #include "vad/vad_core.h"
@@ -104,9 +104,4 @@ int fvad_process(Fvad* inst, const int16_t* frame, size_t length)
     if (rv > 0) rv = 1;
 
     return rv;
-}
-
-int fvad_get_sample_rate(Fvad* inst) {
-    assert(inst);
-    return valid_frame_times[inst->rate_idx] * 1000;
 }

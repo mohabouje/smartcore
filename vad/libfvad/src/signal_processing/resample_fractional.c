@@ -1,11 +1,11 @@
 /*
  *  Copyright (c) 2011 The WebRTC project authors. All Rights Reserved.
  *
- *  Use of this src code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the src
+ *  Use of this source code is governed by a BSD-style license
+ *  that can be found in the LICENSE file in the root of the source
  *  tree. An additional intellectual property rights grant can be found
  *  in the file PATENTS.  All contributing project authors may
- *  be found in the AUTHORS file in the root of the src tree.
+ *  be found in the AUTHORS file in the root of the source tree.
  */
 
 
@@ -15,7 +15,7 @@
  *
  */
 
-#include "../../include/signal_processing/signal_processing_library.h"
+#include "signal_processing_library.h"
 
 // interpolation coefficients
 static const int16_t kCoefficients48To32[2][8] = {
