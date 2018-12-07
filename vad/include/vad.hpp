@@ -80,7 +80,7 @@ namespace score {
         Mode mode() const;
 
         /**
-         * @brief Reinitializes a VAD instance, clearing all state and resetting mode
+         * @brief Re-initializes the VAD, clearing all state and resetting mode
          *  and sample rate to defaults.
          */
         void reset();

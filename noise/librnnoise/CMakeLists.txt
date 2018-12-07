@@ -8,4 +8,4 @@ file(GLOB library_src
 )
 
 add_library(${PROJECT_NAME} STATIC ${library_src})
-target_include_directories(${PROJECT_NAME} PRIVATE include/)
+target_include_directories(${PROJECT_NAME} PUBLIC include/)

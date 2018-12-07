@@ -8,7 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_subdirectory(libfvad)
 
 
-add_library(${PROJECT_NAME} STATIC include/vad.hpp src/vad.cpp)
-target_include_directories(${PROJECT_NAME} PRIVATE include/)
+add_library(${PROJECT_NAME} SHARED include/vad.hpp src/vad.cpp)
+target_include_directories(${PROJECT_NAME} PUBLIC include/)
 target_include_directories(${PROJECT_NAME} PRIVATE libfvad/include/)
 target_link_libraries(${PROJECT_NAME} PRIVATE fvad)
