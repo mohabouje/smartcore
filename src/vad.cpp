@@ -1,4 +1,4 @@
-#include "vad.hpp"
+#include "../include/vad.hpp"
 #include <fvad.h>
 #include <array>
 #include <algorithm>

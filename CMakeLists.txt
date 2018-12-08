@@ -1,7 +1,29 @@
 cmake_minimum_required(VERSION 3.4)
 project(smartcore)
 
-add_subdirectory(doa)
-add_subdirectory(noise)
-add_subdirectory(resample)
-add_subdirectory(vad)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+file(GLOB library_src
+        "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+
+add_subdirectory(thirdparty/librnnoise)
+add_subdirectory(thirdparty/libfvad)
+
+
+add_library(${PROJECT_NAME} SHARED ${library_src})
+target_include_directories(${PROJECT_NAME} PUBLIC include/)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+        fvad
+        rnnoise
+        fftw3f)
+
+include(GNUInstallDirs)
+install(TARGETS ${PROJECT_NAME}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/smartmeet/core
+        FILES_MATCHING PATTERN "*.hpp*")

@@ -8,7 +8,7 @@ file(GLOB library_src
 )
 
 add_library(${PROJECT_NAME} SHARED ${library_src})
-target_include_directories(${PROJECT_NAME} PUBLIC include/)
+target_include_directories(${PROJECT_NAME} PUBLIC include)
 
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME}

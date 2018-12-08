@@ -1,6 +1,6 @@
-#include "resample.hpp"
+#include "../include/resample.hpp"
 #include <samplerate.h>
-#include <resample.hpp>
+#include "../include/resample.hpp"
 
 
 using namespace score;

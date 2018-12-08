@@ -1,7 +1,7 @@
-#include "noise_suppression.hpp"
+#include "../include/noise_suppression.hpp"
 
 #include <rnnoise.h>
-#include <noise_suppression.hpp>
+#include "../include/noise_suppression.hpp"
 
 
 using namespace score;
