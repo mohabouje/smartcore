@@ -1,5 +1,4 @@
 #include "doa.hpp"
-#include "../include/doa.hpp"
 
 #include <fftw3.h>
 
