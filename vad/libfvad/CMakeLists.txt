@@ -13,5 +13,5 @@ file(GLOB library_src
     "${CMAKE_CURRENT_SOURCE_DIR}/src/vad/*.c"
 )
 
-add_library(${PROJECT_NAME} STATIC ${library_src})
+add_library(${PROJECT_NAME} SHARED ${library_src})
 target_include_directories(${PROJECT_NAME} PUBLIC include/)
