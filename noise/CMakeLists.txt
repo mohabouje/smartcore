@@ -8,7 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_subdirectory(librnnoise)
 
 
-add_library(${PROJECT_NAME} SHARED include/noise_suppression.hpp src/noise_suppression.cpp)
+add_library(${PROJECT_NAME} SHARED include/noise_suppression.hpp src/noise_suppression.cpp ../doa/include/doa.hpp ../doa/src/doa.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC include/)
 target_include_directories(${PROJECT_NAME} PRIVATE librnnoise/include/)
 target_link_libraries(${PROJECT_NAME} PRIVATE rnnoise)
