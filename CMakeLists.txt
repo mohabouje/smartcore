@@ -13,12 +13,13 @@ add_subdirectory(thirdparty/librnnoise)
 add_subdirectory(thirdparty/libfvad)
 
 
-add_library(${PROJECT_NAME} SHARED ${library_src})
+add_library(${PROJECT_NAME} SHARED ${library_src} include/recorder.hpp src/recorder.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC include/)
 target_link_libraries(${PROJECT_NAME} PRIVATE
         fvad
         rnnoise
-        fftw3f)
+        fftw3f
+        portaudio)
 
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME}

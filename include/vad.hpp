@@ -52,7 +52,7 @@ namespace score {
          * @param sampleRate Input sample rate in Hz.
          * @throws std::invalid_argument if the passed value is invalid.
          */
-        void setSampleRate(const std::int32_t sampleRate);
+        void setSampleRate(std::int32_t sampleRate);
 
         /**
          * @brief Returns the curren input sample rate.
@@ -71,7 +71,7 @@ namespace score {
          * @param mode VAD operation mode.
          * @see Mode
          */
-        void setMode(const Mode mode);
+        void setMode(Mode mode);
 
         /**
          * @brief Returns the VAD operating ("aggressiveness") mode.

@@ -1,11 +1,8 @@
 #include "doa.hpp"
 
 #include <fftw3.h>
-
 #include <complex>
 #include <algorithm>
-#include <doa.hpp>
-
 
 using namespace score;
 struct DOA::Pimpl {
@@ -156,6 +153,10 @@ void DOA::setSampleRate(float sample_rate) {
 
 float DOA::sampleRate() const {
     return pimpl_->sample_rate_;
+}
+
+void DOA::reset() {
+
 }
 
 DOA::~DOA() = default;

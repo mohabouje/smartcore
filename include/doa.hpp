@@ -66,6 +66,11 @@ namespace score {
          */
         float process(const std::vector<std::vector<float>>& microphone_inputs);
 
+        /**
+         * @brief Re-initializes the block, clearing all state.
+         */
+        void reset();
+
     private:
         struct Pimpl;
         std::unique_ptr<Pimpl> pimpl_;
