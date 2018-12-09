@@ -1,5 +1,5 @@
-#ifndef NOISE_SUPPRESSION_H
-#define NOISE_SUPPRESSION_H
+#ifndef SMARTCORE_NOISE_SUPPRESSION_HPP
+#define SMARTCORE_NOISE_SUPPRESSION_HPP
 
 #include <vector>
 #include <memory>
@@ -10,10 +10,22 @@ namespace score {
     public:
 
         /**
+         * @brief Represents the aggressiveness of the noise suppression method
+         */
+        enum Policy {
+            Mild = 0,
+            Medium,
+            Aggressive
+        };
+
+        /**
          * @brief Creates and initializes a Noise Suppression filter.
+         * @param sample_rate Sampling frequency in Hz.
+         * @param channels Number of channels
+         * @param policy Aggressiveness of the noise suppression method.
          * @throws std::bad_alloc in case of a memory allocation error.
          */
-        NoiseSuppression();
+        NoiseSuppression(std::size_t channels,  float sample_rate, Policy policy);
 
         /**
          * @brief Default destructor.
@@ -26,32 +38,36 @@ namespace score {
         void reset();
 
         /**
-         * @brief Perform a Noise-Suppression filter in an audio frame.
-         *
-         * An audio `frame` is an array of length 480 at 48 kHz as sample rate.
-         *
-         * @note The length of the audio frame should be 480 samples and
-         * the sample rate 48 kHz.
-         *
-         * @param input Array storing the input audio samples.
-         * @param output Array storing the output audio samples.
-         * @throws std::invalid_argument if the length of the frame is invalid.
+         * @brief Returns a pointer to the noise estimate per frequency bin.
+         * @return Vector storing he noise estimate per frequency bin.
          */
-        void process(const float* input, float* output);
+        const std::vector<float>& estimatedNoise() const;
+
+        /**
+         * @brief  Returns the number of frequency bins
+         * @return Number of frequency bins.
+         */
+        std::size_t numberFrequencyBins() const;
+
+        /**
+         * @brief Returns the internally used prior speech probability of the current frame.
+         * @return Prior speech probability in interval [0.0, 1.0].
+         */
+        float speechProbability() const;
+
+        /**
+         * @brief Sets the aggressiveness of the noise suppression method
+         * @param policy Aggressiveness of the noise suppression method
+         */
+        void setPolicy(Policy policy);
 
         /**
          * @brief Perform a Noise-Suppression filter in an audio frame.
-         *
-         * An audio `frame` is an array of length 480 at 48 kHz.
-         *
-         * @note The length of the audio frame should be 480 samples and
-         * the sample rate 48 kHz.
-         *
+         * @note The input and output signals should always be 10ms (80 or 160 samples).
          * @param input Vector storing the input audio samples.
          * @param output Vector storing the output audio samples.
-         * @throws std::invalid_argument if the length of the frame is invalid.
          */
-        void process(const std::vector<float>& input, std::vector<float>& output);
+        void process(const std::vector<std::vector<float>>& input, std::vector<std::vector<float>>& output);
 
     private:
         struct Pimpl;
@@ -59,4 +75,5 @@ namespace score {
     };
 }
 
-#endif // NOISE_SUPPRESSION_H
+
+#endif //SMARTCORE_NOISE_SUPPRESSION_HPP
