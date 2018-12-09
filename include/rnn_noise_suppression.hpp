@@ -1,6 +1,7 @@
 #ifndef RNN_NOISE_SUPPRESSION_H
 #define RNN_NOISE_SUPPRESSION_H
 
+#include <audio_buffer.hpp>
 #include <vector>
 #include <memory>
 
@@ -39,7 +40,7 @@ namespace score {
          * @param output Vector storing the output audio samples.
          * @throws std::invalid_argument if the length of the frame is invalid.
          */
-        void process(const std::vector<std::vector<float>>& input, std::vector<std::vector<float>>& output);
+        void process(const AudioBuffer& input, AudioBuffer& output);
 
     private:
         struct Pimpl;

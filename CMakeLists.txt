@@ -22,7 +22,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         fvad
         rnnoise
         webrtc-noise
-        webrtc-band-analysis
+        webrtc-dsp
         fftw3f
         portaudio)
 

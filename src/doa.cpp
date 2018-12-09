@@ -3,6 +3,8 @@
 #include <fftw3.h>
 #include <complex>
 #include <algorithm>
+#include <doa.hpp>
+
 
 using namespace score;
 struct DOA::Pimpl {
@@ -24,7 +26,6 @@ struct DOA::Pimpl {
             fftwf_destroy_plan(signal_plan_);
             fftwf_destroy_plan(reference_plan_);
             fftwf_destroy_plan(gcc_plan_);
-            fftwf_cleanup();
         }
     }
 
@@ -78,11 +79,11 @@ struct DOA::Pimpl {
     }
 
 
-    float process(const std::vector<std::vector<float>>& microphone_inputs) {
+    float process(const AudioBuffer& microphone_inputs) {
 
         for (auto i = 0ul, size = tau_.size(); i < size; ++i) {
             const auto group = microphone_groups_[i];
-            tau_[i] = gccPhat(microphone_inputs[group.first], microphone_inputs[group.second]);
+            tau_[i] = gccPhat(microphone_inputs.channel_f(group.first), microphone_inputs.channel_f(group.second));
             theta_[i] = static_cast<int>(std::asin(tau_[i] / maximum_tau_) * 180.0f / M_PI);
         }
 
@@ -143,7 +144,7 @@ const std::vector<std::pair<std::size_t, std::size_t>> &score::DOA::groupMicroph
     return pimpl_->microphone_groups_;
 }
 
-float DOA::process(const std::vector<std::vector<float>> &microphone_inputs) {
+float DOA::process(const AudioBuffer &microphone_inputs) {
     return pimpl_->process(microphone_inputs);
 }
 

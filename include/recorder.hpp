@@ -1,6 +1,7 @@
 #ifndef SMARTCORE_RECORDER_HPP
 #define SMARTCORE_RECORDER_HPP
 
+#include <audio_buffer.hpp>
 #include <memory>
 #include <vector>
 #include <functional>
@@ -120,7 +121,7 @@ namespace score {
          * @brief Updates the listener that may be called when a frame is ready to be processed.
          * @param callback Callback to be called.
          */
-        void setOnProcessingBufferReady(const std::function<void(const  std::vector<std::vector<float>>& array)>& callback);
+        void setOnProcessingBufferReady(const std::function<void(AudioBuffer& buffer)>& callback);
 
         /**
          * @brief Re-initializes the block, clearing all state.

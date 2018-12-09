@@ -1,6 +1,7 @@
 #ifndef LIBVAD_VAD_HPP
 #define LIBVAD_VAD_HPP
 
+#include <audio_buffer.hpp>
 #include <memory>
 #include <vector>
 
@@ -47,7 +48,7 @@ namespace score {
          *
          * Valid values are 8000, 16000, 32000 and 48000. The default is 8000Hz.
          * @note Internally all processing will be done 8000 Hz; input data in higher sample rates
-         * will just be downsampled first.
+         * will just be down sampled first.
          *
          * @param sampleRate Input sample rate in Hz.
          * @throws std::invalid_argument if the passed value is invalid.
@@ -96,46 +97,7 @@ namespace score {
          * @throws std::invalid_argument if the length of the frame is invalid.
          * @return True in case of voice activity, false otherwise.
          */
-        bool process(const std::vector<std::int16_t>& samples);
-
-        /**
-         * @brief Calculates a VAD decision for an audio frame.
-         *
-         * An audio `frame` is an array of `length` signed 16-bit samples. Only frames with a
-         * length of 10, 20 or 30 ms are supported, so for example at 8 kHz, `length`
-         * must be either 80, 160 or 240.
-         *
-         * @param samples Array of audio samples.
-         * @param numberSamples Number of samples in the array.
-         * @throws std::invalid_argument if the length of the frame is invalid.
-         * @return True in case of voice activity, false otherwise.
-         */
-        bool process(const std::int16_t* samples, std::size_t numberSamples);
-
-        /**
-         * @brief Calculates a VAD decision for an audio frame.
-         *
-         * @note This function will perform a scaling from a floating point
-         * resolution [-1, 1] to a signed 16 bit resolution.
-         *
-         * @param samples Array of audio samples.
-         * @param numberSamples Number of samples in the array.
-         * @throws std::invalid_argument if the length of the frame is invalid.
-         * @return True in case of success, false otherwise.
-         */
-        bool process(const float* samples, std::size_t numberSamples);
-
-        /**
-         * @brief Calculates a VAD decision for an audio frame.
-         *
-         * @note This function will perform a scaling from a floating point
-         * resolution [-1, 1] to a signed 16 bit resolution.
-         *
-         * @param samples Vector with the audio samples.
-         * @throws std::invalid_argument if the length of the frame is invalid.
-         * @return True in case of success, false otherwise.
-         */
-        bool process(const std::vector<float>& samples);
+        bool process(const AudioBuffer& samples);
 
     private:
         struct Pimpl;

@@ -1,6 +1,7 @@
 #ifndef SMARTCORE_NOISE_SUPPRESSION_HPP
 #define SMARTCORE_NOISE_SUPPRESSION_HPP
 
+#include <audio_buffer.hpp>
 #include <vector>
 #include <memory>
 
@@ -23,6 +24,7 @@ namespace score {
          * @param sample_rate Sampling frequency in Hz.
          * @param channels Number of channels
          * @param policy Aggressiveness of the noise suppression method.
+         * @note Supported sample rates: 8KHz or 16KHz.
          * @throws std::bad_alloc in case of a memory allocation error.
          */
         NoiseSuppression(std::size_t channels,  float sample_rate, Policy policy);
@@ -67,7 +69,7 @@ namespace score {
          * @param input Vector storing the input audio samples.
          * @param output Vector storing the output audio samples.
          */
-        void process(const std::vector<std::vector<float>>& input_bands, std::vector<std::vector<float>>& output);
+        void process(const AudioBuffer& input, AudioBuffer& output);
 
     private:
         struct Pimpl;

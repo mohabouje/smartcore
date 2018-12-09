@@ -1,6 +1,7 @@
 #ifndef SMARTCORE_DOA_H
 #define SMARTCORE_DOA_H
 
+#include <audio_buffer.hpp>
 #include <memory>
 #include <vector>
 
@@ -64,7 +65,7 @@ namespace score {
          * @param input Vector of arrays storing the input audio samples.
          * @returns The direction of arrival.
          */
-        float process(const std::vector<std::vector<float>>& microphone_inputs);
+        float process(const AudioBuffer& microphone_inputs);
 
         /**
          * @brief Re-initializes the block, clearing all state.

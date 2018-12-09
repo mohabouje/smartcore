@@ -43,20 +43,26 @@ struct DeepNoiseSuppression::Pimpl {
         }
     }
 
-    void process(const std::vector<std::vector<float>>& inputs, std::vector<std::vector<float>>& outputs) {
-        if (inputs.size() != channels_) {
+    void process(const AudioBuffer& input, AudioBuffer& output) {
+        if (input.channels() != channels_) {
             throw std::invalid_argument("Expected an input frame with " + std::to_string(channels_) + " channels.");
         }
 
-        outputs.resize(inputs.size());
-        for (auto i = 0ul; i < channels_; ++i) {
-            static constexpr auto BufferSize = 480;
-            if (inputs[i].size() != BufferSize) {
-                throw std::invalid_argument("Invalid length. Expected 480 samples and 48KHz as sample rate.");
-            }
+        constexpr auto SampleRate = 48000;
+        constexpr auto BufferSize = 480;
 
-            outputs[i].resize(inputs[i].size());
-            rnnoise_process_frame(handlers_[i]->core(), outputs[i].data(), inputs[i].data());
+        if (input.sampleRate() != SampleRate) {
+            throw std::invalid_argument("Invalid sample rate. Supported sample rate: "
+            + std::to_string(SampleRate) + " Hz.");
+        }
+
+        if (input.framesPerChannel() != BufferSize) {
+            throw std::invalid_argument("Invalid length. Expected 480 samples and 48KHz as sample rate.");
+        }
+
+        output.resize(input.channels(), input.framesPerChannel());
+        for (auto i = 0ul; i < channels_; ++i) {
+            rnnoise_process_frame(handlers_[i]->core(), output.channel_f(i).data(), input.channel_f(i).data());
         }
 
     }
@@ -70,7 +76,7 @@ DeepNoiseSuppression::DeepNoiseSuppression(std::size_t channels) : pimpl_(std::m
 
 DeepNoiseSuppression::~DeepNoiseSuppression() = default;
 
-void DeepNoiseSuppression::process(const std::vector<std::vector<float>>& input, std::vector<std::vector<float>>& output) {
+void DeepNoiseSuppression::process(const AudioBuffer& input, AudioBuffer& output) {
     pimpl_->process(input, output);
 }
 

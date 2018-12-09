@@ -11,7 +11,7 @@ struct Recorder::Pimpl {
         channels_(channels),
         frames_per_buffer_(static_cast<size_t>(frames_per_buffer ? frames_per_buffer : sample_rate / 100)),
         sample_rate_(sample_rate),
-        array_(channels, std::vector<float>(frames_per_buffer, 0))
+        buffer_(sample_rate, channels, frames_per_buffer)
     {
         const auto err = Pa_Initialize();
         if (err != paNoError) {
@@ -40,14 +40,14 @@ struct Recorder::Pimpl {
         on_recording_stopped_ = callback;
     }
 
-    void setOnProcessingBufferReady(const std::function<void(const  std::vector<std::vector<float>>& array)>& callback) {
+    void setOnProcessingBufferReady(const std::function<void(AudioBuffer& array)>& callback) {
         on_buffer_ready_ = callback;
     }
 
     void restart() {
-        input_params_.channelCount = channels_;
-        input_params_.device = device_index_;
-        input_params_.sampleFormat = paFloat32;
+        input_params_.channelCount = static_cast<int>(channels_);
+        input_params_.device = static_cast<PaDeviceIndex>(device_index_);
+        input_params_.sampleFormat = paInt16;
         input_params_.suggestedLatency = Pa_GetDeviceInfo(device_index_)->defaultLowInputLatency;
         input_params_.hostApiSpecificStreamInfo = NULL;
 
@@ -100,13 +100,14 @@ struct Recorder::Pimpl {
                      const PaStreamCallbackTimeInfo *timeInfo,
                      PaStreamCallbackFlags statusFlags) {
 
-        const auto* input = static_cast<const float*>(inputBuffer);
+
+        const auto* input = static_cast<const std::int16_t*>(inputBuffer);
         for (auto i = 0ul; i < channels_; ++i) {
             for (auto j = 0ul, index = i; j < framesPerBuffer; ++j, index += channels_) {
-                array_[i][j] = input[index];
+                buffer_[i][j] = input[index];
             }
         }
-        on_buffer_ready_(array_);
+        on_buffer_ready_(buffer_);
         return paContinue;
     }
 
@@ -117,7 +118,7 @@ struct Recorder::Pimpl {
         output_params.sampleFormat = paFloat32;
         output_params.suggestedLatency = Pa_GetDeviceInfo(output_params.device)->defaultLowInputLatency;
         output_params.hostApiSpecificStreamInfo = NULL;
-        return Pa_IsFormatSupported(&input_params_, &output_params, sample_rate);
+        return static_cast<bool>(Pa_IsFormatSupported(&input_params_, &output_params, sample_rate));
     }
 
     void setSampleRate(float sample_rate) {
@@ -143,11 +144,11 @@ struct Recorder::Pimpl {
 
     void setFramesPerBuffer(std::size_t frames_per_buffer) {
         frames_per_buffer_ = frames_per_buffer;
-        array_ =  std::vector<std::vector<float>>(channels_, std::vector<float>(frames_per_buffer, 0));
+        buffer_.resize(channels_, frames_per_buffer);
     }
 
     bool isRunning() const {
-        return Pa_IsStreamActive(stream_);
+        return static_cast<bool>(Pa_IsStreamActive(stream_));
     }
 
     double timestamp() const {
@@ -163,10 +164,10 @@ struct Recorder::Pimpl {
     float sample_rate_;
 
 
-    std::vector<std::vector<float>> array_{};
+    AudioBuffer buffer_;
     std::function<void()> on_recording_started_{nullptr};
     std::function<void()> on_recording_stopped_{nullptr};
-    std::function<void(const  std::vector<std::vector<float>>& array)> on_buffer_ready_{nullptr};
+    std::function<void(AudioBuffer& array)> on_buffer_ready_{nullptr};
 
 };
 
@@ -199,7 +200,7 @@ void Recorder::setOnRecordingStopped(const std::function<void()> &callback) {
     pimpl_->setOnRecordingStopped(callback);
 }
 
-void Recorder::setOnProcessingBufferReady(const std::function<void(const std::vector<std::vector<float>> &)> &callback) {
+void Recorder::setOnProcessingBufferReady(const std::function<void(AudioBuffer&)> &callback) {
     pimpl_->setOnProcessingBufferReady(callback);
 }
 

@@ -38,20 +38,7 @@ struct VAD::Pimpl {
     bool process(const std::int16_t *samples, std::size_t numberSamples) {
         const auto result = fvad_process(processor_, samples, numberSamples);
         if (result == -1) {
-            throw std::invalid_argument("Invalid frame length. Must be either 80, 160 or 240.");
-        }
-        return (bool) result;
-    }
-
-    bool process(const float *samples, std::size_t numberSamples) {
-        std::transform(samples, samples + numberSamples, &temp_[0], [](const auto value) {
-            return value > 0 ? std::numeric_limits<std::int16_t>::max() * value
-                             : std::numeric_limits<std::int16_t>::min() * value;
-        });
-
-        const auto result = fvad_process(processor_, temp_.data(), numberSamples);
-        if (result == -1) {
-            throw std::invalid_argument("Invalid frame length. Must be either 80, 160 or 240.");
+            throw std::invalid_argument("Invalid frame length. Must be either 10, 20 or 30 msecs.");
         }
         return (bool) result;
     }
@@ -67,7 +54,6 @@ struct VAD::Pimpl {
 
     Fvad* processor_{nullptr};
     VAD::Mode mode_{VAD::Mode::Quality};
-    std::array<std::int16_t, 1440> temp_;
     float sample_rate_;
 };
 
@@ -80,7 +66,7 @@ std::vector<std::int32_t> VAD::supportedSampleRates() {
 }
 
 std::vector<std::int32_t> VAD::supportedFrameLength() {
-    return {80, 160, 240};
+    return {10, 20, 30 };
 }
 
 void VAD::setSampleRate(const std::int32_t sampleRate)  {
@@ -103,20 +89,8 @@ void VAD::reset() {
     pimpl_->reset();
 }
 
-bool VAD::process(const std::vector<std::int16_t> &samples) {
-    return pimpl_->process(samples.data(), samples.size());
-}
-
-bool VAD::process(const std::int16_t *samples, std::size_t numberSamples) {
-    return pimpl_->process(samples, numberSamples);
-}
-
-bool VAD::process(const std::vector<float> &samples) {
-    return pimpl_->process(samples.data(), samples.size());
-}
-
-bool VAD::process(const float *samples, std::size_t numberSamples) {
-    return pimpl_->process(samples, numberSamples);
+bool VAD::process(const AudioBuffer &samples) {
+    return pimpl_->process(samples.downmix().data(), samples.framesPerChannel());
 }
 
 VAD::~VAD() = default;
