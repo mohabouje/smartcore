@@ -7,6 +7,7 @@ using namespace score;
 
 struct VAD::Pimpl {
     explicit Pimpl(std::int32_t sampleRate) :
+        sample_rate_(sampleRate),
         processor_(fvad_new()) {
 
         if (processor_ == nullptr) {
@@ -14,6 +15,7 @@ struct VAD::Pimpl {
         }
 
         setSampleRate(sampleRate);
+        setMode(mode_);
     }
 
     ~Pimpl() {
@@ -26,11 +28,11 @@ struct VAD::Pimpl {
             throw std::invalid_argument("Invalid sample rate. "
                                         "Valid values are 8000, 16000, 32000 and 48000.");
         }
+        sample_rate_ = sampleRate;
     }
 
     int sampleRate() const {
-        // TODO: implement a return variable
-        return 0;
+        return static_cast<int>(sample_rate_);
     }
 
     bool process(const std::int16_t *samples, std::size_t numberSamples) {
@@ -38,7 +40,7 @@ struct VAD::Pimpl {
         if (result == -1) {
             throw std::invalid_argument("Invalid frame length. Must be either 80, 160 or 240.");
         }
-        return result;
+        return (bool) result;
     }
 
     bool process(const float *samples, std::size_t numberSamples) {
@@ -51,16 +53,22 @@ struct VAD::Pimpl {
         if (result == -1) {
             throw std::invalid_argument("Invalid frame length. Must be either 80, 160 or 240.");
         }
-        return result;
+        return (bool) result;
     }
 
     void reset() {
         fvad_reset(processor_);
     }
 
+    void setMode(VAD::Mode mode) {
+        const auto m = static_cast<std::underlying_type<VAD::Mode>::type>(mode);
+        fvad_set_mode(processor_, m);
+    }
+
     Fvad* processor_{nullptr};
     VAD::Mode mode_{VAD::Mode::Quality};
     std::array<std::int16_t, 1440> temp_;
+    float sample_rate_;
 };
 
 VAD::VAD(std::int32_t sampleRate) : pimpl_(std::make_unique<Pimpl>(sampleRate))  {

@@ -6,6 +6,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 
+set(DSP_FILES
+        common_audio/sparse_fir_filter.h
+        common_audio/sparse_fir_filter.cc)
+
+add_library(webrtc-band-analysis SHARED ${DSP_FILES})
+target_include_directories(webrtc-band-analysis PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(webrtc-band-analysis PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/modules/audio_processing/)
+set_target_properties(webrtc-band-analysis PROPERTIES PUBLIC_HEADER modules/audio_processing/three_band_filter_bank.h)
+
+include(GNUInstallDirs)
+install(TARGETS webrtc-band-analysis
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/smartmeet/core/")
+
+
 set(NS_FILES
         modules/audio_processing/ns/defines.h
         modules/audio_processing/ns/noise_suppression.h

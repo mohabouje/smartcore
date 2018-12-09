@@ -1,9 +1,9 @@
 #include <memory>
 
 #include "noise_suppression.hpp"
-
+#include "band_extractor.hpp"
 #include <noise_suppression.h>
-#include <noise_suppression.hpp>
+
 
 
 using namespace score;
