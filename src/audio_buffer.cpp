@@ -21,12 +21,22 @@ void score::AudioBuffer::resize(std::size_t channels, std::size_t frames_per_cha
     frames_ = frames_per_channel;
     fixed_data_.resize(channels, std::vector<std::int16_t>(frames_per_channel));
     floating_data_.resize(channels, std::vector<float>(frames_per_channel));
+    fixed_mixed_.resize(frames_per_channel);
+    floating_mixed_.resize(frames_per_channel);
     band_extractor_.resize(channels);
 }
 
-void AudioBuffer::split_helper() const {
+void AudioBuffer::split_helper() {
     if (fixed_bands_still_valid_)
         return;
+
+    fixed_bands_.resize(channels_);
+    for (auto& c : fixed_bands_) {
+        c.resize(Bands::NumberBands);
+        for (auto& b : c) {
+            b.resize(frames_);
+        }
+    }
 
     for (auto i = 0ul; i < channels_; ++i) {
         band_extractor_[i].process(fixed_data_[i], fixed_bands_[i]);
@@ -35,11 +45,19 @@ void AudioBuffer::split_helper() const {
     fixed_bands_still_valid_ = true;
 }
 
-void AudioBuffer::split_helper_f() const {
+void AudioBuffer::split_helper_f() {
     if (floating_bands_still_valid_)
         return;
 
-    starting_fixed_operation(true); // Refresh the bands, just in case.
+    start_fixed_operation(true); // Refresh the bands, just in case.
+    floating_bands_.resize(channels_);
+    for (auto& c : floating_bands_) {
+        c.resize(Bands::NumberBands);
+        for (auto& b : c) {
+            b.resize(frames_);
+        }
+    }
+
     for (auto i = 0ul; i < channels_; ++i) {
         for (auto j = 0ul; j < fixed_bands_.size(); ++j) {
             for (auto z = 0ul; z < frames_; ++z) {
@@ -51,7 +69,7 @@ void AudioBuffer::split_helper_f() const {
     floating_bands_still_valid_ = true;
 }
 
-void AudioBuffer::mixed_helper(std::size_t band_index) const {
+void AudioBuffer::mixed_helper(Bands band_index) {
     if (fixed_mixed_still_valid_)
         return;
 
@@ -66,7 +84,7 @@ void AudioBuffer::mixed_helper(std::size_t band_index) const {
     fixed_mixed_still_valid_ = true;
 }
 
-void AudioBuffer::mixed_helper_f(std::size_t band_index) const {
+void AudioBuffer::mixed_helper_f(Bands band_index) {
     if (floating_mixed_still_valid_)
         return;
 
@@ -74,7 +92,7 @@ void AudioBuffer::mixed_helper_f(std::size_t band_index) const {
     for (auto i = 0ul; i < channels_; ++i) {
         const auto& b = this->band(i, band_index);
         for (auto j = 0ul; j < frames_; ++j) {
-            floating_mixed_[j] += (b[j] / channels_);
+            floating_mixed_[j] += (b[j] / static_cast<float>(channels_));
         }
     }
 
@@ -82,57 +100,57 @@ void AudioBuffer::mixed_helper_f(std::size_t band_index) const {
 }
 
 std::vector<std::int16_t> &AudioBuffer::channel(std::size_t channel) {
-    starting_fixed_operation();
+    start_fixed_operation_and_invalidate();
     return fixed_data_[channel];
 }
 
 const std::vector<std::int16_t> &AudioBuffer::channel(std::size_t channel) const {
-    starting_fixed_operation();
+    start_fixed_operation();
     return fixed_data_[channel];
 }
 
 std::vector<float> &AudioBuffer::channel_f(std::size_t channel) {
-    starting_floating_operation();
+    start_floating_operation_and_invalidate();
     return floating_data_[channel];
 }
 
 const std::vector<float> &AudioBuffer::channel_f(std::size_t channel) const {
-    starting_floating_operation();
+    start_floating_operation();
     return floating_data_[channel];
 }
 
-std::vector<std::int16_t> &AudioBuffer::band(std::size_t channel, std::size_t band) {
-    starting_fixed_operation(true);
+std::vector<std::int16_t> &AudioBuffer::band(std::size_t channel, Bands band) {
+    start_fixed_operation_and_invalidate(true);
     return fixed_bands_[channel][band];
 }
 
-const std::vector<std::int16_t> &AudioBuffer::band(std::size_t channel, std::size_t band) const {
-    starting_fixed_operation(true);
+const std::vector<std::int16_t> &AudioBuffer::band(std::size_t channel, Bands band) const {
+    start_fixed_operation(true);
     return fixed_bands_[channel][band];
 }
 
-std::vector<float> &AudioBuffer::band_f(std::size_t channel, std::size_t band) {
-    starting_floating_operation(true);
+std::vector<float> &AudioBuffer::band_f(std::size_t channel, Bands band) {
+    start_floating_operation_and_invalidate(true);
     return floating_bands_[channel][band];
 }
 
-const std::vector<float> &AudioBuffer::band_f(std::size_t channel, std::size_t band) const {
-    starting_floating_operation(true);
+const std::vector<float> &AudioBuffer::band_f(std::size_t channel, Bands band) const {
+    start_floating_operation(true);
     return floating_bands_[channel][band];
 }
 
 std::vector<std::int16_t> &AudioBuffer::operator[](std::size_t channel) {
-    starting_fixed_operation();
+    start_fixed_operation_and_invalidate();
     return fixed_data_[channel];
 }
 
 const std::vector<std::int16_t> &AudioBuffer::operator[](std::size_t channel) const {
-    starting_fixed_operation();
+    start_fixed_operation();
     return fixed_data_[channel];
 }
 
 void AudioBuffer::merge() {
-    starting_fixed_operation(true);
+    start_fixed_operation_and_invalidate(true);
     for (auto i = 0ul; i < channels_; ++i) {
         band_extractor_[i].synthesis(fixed_bands_[i], fixed_data_[i]);
     }
@@ -143,7 +161,6 @@ float AudioBuffer::sampleRate() const {
 }
 
 
-
 std::size_t AudioBuffer::framesPerChannel() const {
     return frames_;
 }
@@ -152,6 +169,9 @@ std::size_t AudioBuffer::channels() const {
     return channels_;
 }
 
+std::size_t AudioBuffer::numberBands() const {
+    return Bands::NumberBands;
+}
 
 typedef std::numeric_limits<int16_t> limits_int16;
 
@@ -164,7 +184,7 @@ static inline int16_t FloatS16ToS16(float v) {
     return v <= kMinRound ? limits_int16::min() : static_cast<int16_t>(v - 0.5f);
 }
 
-void AudioBuffer::refresh_fixed() const {
+void AudioBuffer::refresh_fixed() {
     if (fixed_data_still_valid_)
         return;
 
@@ -177,7 +197,7 @@ void AudioBuffer::refresh_fixed() const {
     fixed_bands_still_valid_ = true;
 }
 
-void AudioBuffer::refresh_floating() const {
+void AudioBuffer::refresh_floating() {
     if (floating_data_still_valid_)
         return;
 
@@ -190,32 +210,34 @@ void AudioBuffer::refresh_floating() const {
     floating_data_still_valid_ = true;
 }
 
-void AudioBuffer::starting_fixed_operation(bool update_bands, bool update_mixed) const {
-    refresh_fixed();
+void AudioBuffer::start_fixed_operation(bool update_bands, bool update_mixed) const {
+    auto* editable = const_cast<AudioBuffer*>(this);
+    editable->refresh_fixed();
 
     if (update_bands && !fixed_bands_still_valid_) {
-        split_helper();
+        editable->split_helper();
     }
 
     if (update_mixed && !fixed_mixed_still_valid_) {
-        mixed_helper(Band0To8kHz);
+        editable->mixed_helper(Band0To8kHz);
     }
 }
 
-void AudioBuffer::starting_floating_operation(bool update_bands, bool update_mixed) const {
-    refresh_floating();
+void AudioBuffer::start_floating_operation(bool update_bands, bool update_mixed) const {
+    auto* editable = const_cast<AudioBuffer*>(this);
+    editable->refresh_fixed();
 
     if (update_bands && !floating_bands_still_valid_) {
-        split_helper_f();
+        editable->split_helper_f();
     }
 
     if (update_mixed && !floating_mixed_still_valid_) {
-        mixed_helper_f(Band0To8kHz);
+        editable->mixed_helper_f(Band0To8kHz);
     }
 }
 
 
-void AudioBuffer::starting_fixed_operation(bool update_bands, bool update_mixed) {
+void AudioBuffer::start_fixed_operation_and_invalidate(bool update_bands, bool update_mixed) {
     const auto edit_data = !fixed_data_still_valid_;
     const auto edit_bands = update_bands && !fixed_bands_still_valid_;
     const auto edit_mixed = update_mixed && !fixed_mixed_still_valid_;
@@ -232,7 +254,7 @@ void AudioBuffer::starting_fixed_operation(bool update_bands, bool update_mixed)
     invalidate_floating_data(edit_data, edit_bands, edit_mixed);
 }
 
-void AudioBuffer::starting_floating_operation(bool update_bands, bool update_mixed) {
+void AudioBuffer::start_floating_operation_and_invalidate(bool update_bands, bool update_mixed) {
     const auto edit_data = !floating_data_still_valid_;
     const auto edit_bands = update_bands && !floating_bands_still_valid_;
     const auto edit_mixed = update_mixed && !floating_mixed_still_valid_;
@@ -262,11 +284,11 @@ void AudioBuffer::invalidate_floating_data(bool data_edited, bool bands_edited, 
 }
 
 const std::vector<std::int16_t> &AudioBuffer::downmix() const {
-    starting_fixed_operation(true, true);
+    start_fixed_operation(true, true);
     return fixed_mixed_;
 }
 
 const std::vector<float> &AudioBuffer::downmix_f() const {
-    starting_floating_operation(true, true);
+    start_floating_operation(true, true);
     return floating_mixed_;
 }

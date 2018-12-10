@@ -7,9 +7,17 @@
 
 namespace score {
 
+    /**
+ * The Bands enum represent the different available bands in each channel.
+ */
+    enum Bands {
+        Band0To8kHz = 0,
+        Band8To16kHz,
+        NumberBands
+    };
+
     class BandExtractor {
     public:
-        static constexpr std::size_t NumBands = 2ul;
 
         /**
          * @brief Default constructor
@@ -42,22 +50,18 @@ namespace score {
 
     private:
         struct BandsStates {
-            BandsStates() {
-                reset();
-            }
-
             void reset() {
-                memset(analysis_state1, 0, sizeof(analysis_state1));
-                memset(analysis_state2, 0, sizeof(analysis_state2));
-                memset(synthesis_state1, 0, sizeof(synthesis_state1));
-                memset(synthesis_state2, 0, sizeof(synthesis_state2));
+                std::fill(analysis_state1.begin(), analysis_state1.end(), 0);
+                std::fill(analysis_state2.begin(), analysis_state2.end(), 0);
+                std::fill(synthesis_state1.begin(), synthesis_state1.end(), 0);
+                std::fill(synthesis_state2.begin(), synthesis_state2.end(), 0);
             }
 
             static constexpr auto StateSize = 6;
-            int analysis_state1[StateSize];
-            int analysis_state2[StateSize];
-            int synthesis_state1[StateSize];
-            int synthesis_state2[StateSize];
+            std::array<int, StateSize> analysis_state1{{0, 0, 0, 0, 0, 0}};
+            std::array<int, StateSize> analysis_state2{{0, 0, 0, 0, 0, 0}};
+            std::array<int, StateSize> synthesis_state1{{0, 0, 0, 0, 0, 0}};
+            std::array<int, StateSize> synthesis_state2{{0, 0, 0, 0, 0, 0}};
         };
         BandsStates two_bands_state_;
     };

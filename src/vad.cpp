@@ -26,7 +26,7 @@ struct VAD::Pimpl {
         const auto result = fvad_set_sample_rate(processor_, sampleRate);
         if (result == -1) {
             throw std::invalid_argument("Invalid sample rate. "
-                                        "Valid values are 8000, 16000, 32000 and 48000.");
+                                        "Valid values are 8000, 16000, 32000 and 48000Hz.");
         }
         sample_rate_ = sampleRate;
     }

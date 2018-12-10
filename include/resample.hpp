@@ -1,6 +1,7 @@
 #ifndef SMARTCORE_RESAMPLE_H
 #define SMARTCORE_RESAMPLE_H
 
+#include <audio_buffer.hpp>
 #include <memory>
 #include <vector>
 
@@ -50,7 +51,6 @@ namespace score {
          */
         float ratio() const;
 
-
         /**
          * @brief Set a new ratio (output sample rate / input sample rate).
          * @throws std::runtime_error If the ratio is invalid.
@@ -67,20 +67,10 @@ namespace score {
         /**
          * @brief Performs a Re-Sampling filter in an audio frame.
          *
-         * @param input Array storing the input audio samples.
-         * @param output Array storing the output audio samples.
-         * @returns The size of the output array.
+         * @param input Buffer storing the input audio samples.
+         * @param output Buffer storing the output audio samples.
          */
-        std::size_t process(const float* input, float* output, std::size_t size);
-
-        /**
-         * @brief Performs a Re-Sampling filter in an audio frame.
-         *
-         * @param input Vector storing the input audio samples.
-         * @param output Vector storing the output audio samples.
-         * @returns The size of the output vector.
-         */
-        std::size_t process(const std::vector<float>& input, std::vector<float>& output);
+        void process(const AudioBuffer& input, AudioBuffer& output);
 
     private:
         struct Pimpl;

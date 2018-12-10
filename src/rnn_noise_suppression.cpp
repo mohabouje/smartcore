@@ -27,7 +27,7 @@ private:
 
 
 struct DeepNoiseSuppression::Pimpl {
-    Pimpl(std::size_t channels) :
+    explicit Pimpl(std::size_t channels) :
         channels_(channels),
         handlers_(channels) {
         for (auto& smart_pointer : handlers_) {

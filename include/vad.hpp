@@ -56,7 +56,7 @@ namespace score {
         void setSampleRate(std::int32_t sampleRate);
 
         /**
-         * @brief Returns the curren input sample rate.
+         * @brief Returns the current input sample rate.
          * @return Input sample rate in Hz.
          */
         std::int32_t sampleRate() const;
