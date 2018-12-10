@@ -27,7 +27,7 @@ void AudioBuffer::updateRaw(std::size_t channels, std::size_t frames_per_channel
     for (auto i = 0ul; i < channels; ++i) {
         for (auto j = 0ul, index = i; j < frames_per_channel; ++j, index += channels_) {
             raw_data_[index] = raw[index];
-            fixed_data_[i][j] = raw[index];
+            fixed_data_(i, j) = raw[index];
         }
     }
 
@@ -40,10 +40,10 @@ void AudioBuffer::updateRaw(std::size_t channels, std::size_t frames_per_channel
 
 void score::AudioBuffer::resize(std::size_t channels, std::size_t frames_per_channel) {
     channels_ = channels;
-    frames_ = frames_per_channel;
+    frames_per_buffer_ = frames_per_channel;
     raw_data_.resize(channels * frames_per_channel);
-    fixed_data_.resize(channels, std::vector<std::int16_t>(frames_per_channel));
-    floating_data_.resize(channels, std::vector<float>(frames_per_channel));
+    fixed_data_.resize(channels, frames_per_channel);
+    floating_data_.resize(channels, frames_per_channel);
     fixed_mixed_.resize(frames_per_channel);
     floating_mixed_.resize(frames_per_channel);
     band_extractor_.resize(channels);
@@ -55,14 +55,11 @@ void AudioBuffer::split_helper() {
 
     fixed_bands_.resize(channels_);
     for (auto& c : fixed_bands_) {
-        c.resize(Bands::NumberBands);
-        for (auto& b : c) {
-            b.resize(frames_);
-        }
+        c.resize(Bands::NumberBands, frames_per_buffer_);
     }
 
     for (auto i = 0ul; i < channels_; ++i) {
-        band_extractor_[i].process(fixed_data_[i], fixed_bands_[i]);
+        band_extractor_[i].process(channel(i), frames_per_buffer_, fixed_bands_[i]);
     }
 
     fixed_bands_still_valid_ = true;
@@ -72,19 +69,16 @@ void AudioBuffer::split_helper_f() {
     if (floating_bands_still_valid_)
         return;
 
-    start_fixed_operation(true); // Refresh the bands, just in case.
+    start_fixed_operation(true);  //Refresh the bands, just in case.
     floating_bands_.resize(channels_);
     for (auto& c : floating_bands_) {
-        c.resize(Bands::NumberBands);
-        for (auto& b : c) {
-            b.resize(frames_);
-        }
+        c.resize(Bands::NumberBands, frames_per_buffer_);
     }
 
     for (auto i = 0ul; i < channels_; ++i) {
         for (auto j = 0ul; j < fixed_bands_.size(); ++j) {
-            for (auto z = 0ul; z < frames_; ++z) {
-                floating_bands_[i][j][z] = fixed_bands_[i][j][z];
+            for (auto z = 0ul; z < frames_per_buffer_; ++z) {
+                floating_bands_[i](j, z) = fixed_bands_[i](j, z);
             }
         }
     }
@@ -96,10 +90,10 @@ void AudioBuffer::mixed_helper(Bands band_index) {
     if (fixed_mixed_still_valid_)
         return;
 
-    fixed_mixed_.resize(frames_);
+    fixed_mixed_.resize(frames_per_buffer_);
     for (auto i = 0ul; i < channels_; ++i) {
         const auto& b = this->band(i, band_index);
-        for (auto j = 0ul; j < frames_; ++j) {
+        for (auto j = 0ul; j < frames_per_buffer_; ++j) {
             fixed_mixed_[j] += (b[j] / channels_);
         }
     }
@@ -111,10 +105,10 @@ void AudioBuffer::mixed_helper_f(Bands band_index) {
     if (floating_mixed_still_valid_)
         return;
 
-    floating_mixed_.resize(frames_);
+    floating_mixed_.resize(frames_per_buffer_);
     for (auto i = 0ul; i < channels_; ++i) {
         const auto& b = this->band(i, band_index);
-        for (auto j = 0ul; j < frames_; ++j) {
+        for (auto j = 0ul; j < frames_per_buffer_; ++j) {
             floating_mixed_[j] += (b[j] / static_cast<float>(channels_));
         }
     }
@@ -122,60 +116,60 @@ void AudioBuffer::mixed_helper_f(Bands band_index) {
     floating_mixed_still_valid_ = true;
 }
 
-std::vector<std::int16_t> &AudioBuffer::channel(std::size_t channel) {
+std::int16_t *AudioBuffer::channel(std::size_t channel) {
     start_fixed_operation_and_invalidate();
-    return fixed_data_[channel];
+    return fixed_data_.row(channel).data();
 }
 
-const std::vector<std::int16_t> &AudioBuffer::channel(std::size_t channel) const {
+const std::int16_t *AudioBuffer::channel(std::size_t channel) const {
     start_fixed_operation();
-    return fixed_data_[channel];
+    return fixed_data_.row(channel).data();
 }
 
-std::vector<float> &AudioBuffer::channel_f(std::size_t channel) {
+float *AudioBuffer::channel_f(std::size_t channel) {
     start_floating_operation_and_invalidate();
-    return floating_data_[channel];
+    return floating_data_.row(channel).data();
 }
 
-const std::vector<float> &AudioBuffer::channel_f(std::size_t channel) const {
+const float *AudioBuffer::channel_f(std::size_t channel) const {
     start_floating_operation();
-    return floating_data_[channel];
+    return floating_data_.row(channel).data();
 }
 
-std::vector<std::int16_t> &AudioBuffer::band(std::size_t channel, Bands band) {
+std::int16_t *AudioBuffer::band(std::size_t channel, Bands band) {
     start_fixed_operation_and_invalidate(true);
-    return fixed_bands_[channel][band];
+    return fixed_bands_[channel].row(band).data();
 }
 
-const std::vector<std::int16_t> &AudioBuffer::band(std::size_t channel, Bands band) const {
+const std::int16_t *AudioBuffer::band(std::size_t channel, Bands band) const {
     start_fixed_operation(true);
-    return fixed_bands_[channel][band];
+    return fixed_bands_[channel].row(band).data();
 }
 
-std::vector<float> &AudioBuffer::band_f(std::size_t channel, Bands band) {
+float *AudioBuffer::band_f(std::size_t channel, Bands band) {
     start_floating_operation_and_invalidate(true);
-    return floating_bands_[channel][band];
+    return floating_bands_[channel].row(band).data();
 }
 
-const std::vector<float> &AudioBuffer::band_f(std::size_t channel, Bands band) const {
+const float *AudioBuffer::band_f(std::size_t channel, Bands band) const {
     start_floating_operation(true);
-    return floating_bands_[channel][band];
+    return floating_bands_[channel].row(band).data();
 }
 
-std::vector<std::int16_t> &AudioBuffer::operator[](std::size_t channel) {
+std::int16_t *AudioBuffer::operator[](std::size_t channel) {
     start_fixed_operation_and_invalidate();
-    return fixed_data_[channel];
+    return fixed_data_.row(channel).data();
 }
 
-const std::vector<std::int16_t> &AudioBuffer::operator[](std::size_t channel) const {
+const std::int16_t *AudioBuffer::operator[](std::size_t channel) const {
     start_fixed_operation();
-    return fixed_data_[channel];
+    return fixed_data_.row(channel).data();
 }
 
 void AudioBuffer::merge() {
     start_fixed_operation_and_invalidate(true);
     for (auto i = 0ul; i < channels_; ++i) {
-        band_extractor_[i].synthesis(fixed_bands_[i], fixed_data_[i]);
+        band_extractor_[i].synthesis(fixed_bands_[i], channel(i));
     }
 }
 
@@ -185,7 +179,7 @@ float AudioBuffer::sampleRate() const {
 
 
 std::size_t AudioBuffer::framesPerChannel() const {
-    return frames_;
+    return frames_per_buffer_;
 }
 
 std::size_t AudioBuffer::channels() const {
@@ -212,8 +206,8 @@ void AudioBuffer::refresh_fixed() {
         return;
 
     for (auto i = 0ul; i < channels_; ++i) {
-        for (auto j = 0ul; j < frames_; ++j) {
-            fixed_data_[i][j] = FloatS16ToS16(floating_data_[i][j]);
+        for (auto j = 0ul; j < frames_per_buffer_; ++j) {
+            fixed_data_(i,j) = FloatS16ToS16(floating_data_(i, j));
         }
     }
 
@@ -225,8 +219,8 @@ void AudioBuffer::refresh_floating() {
         return;
 
     for (auto i = 0ul; i < channels_; ++i) {
-        for (auto j = 0ul; j < frames_; ++j) {
-            floating_data_[i][j] = fixed_data_[i][j];
+        for (auto j = 0ul; j < frames_per_buffer_; ++j) {
+            floating_data_(i,j) = fixed_data_(i,j);
         }
     }
 
@@ -306,22 +300,22 @@ void AudioBuffer::invalidate_floating_data(bool data_edited, bool bands_edited, 
     floating_mixed_still_valid_ = !mixed_edited;
 }
 
-const std::vector<std::int16_t> &AudioBuffer::downmix() const {
+const std::int16_t *AudioBuffer::downmix() const {
     start_fixed_operation(true, true);
-    return fixed_mixed_;
+    return fixed_mixed_.data();
 }
 
-const std::vector<float> &AudioBuffer::downmix_f() const {
+const float *AudioBuffer::downmix_f() const {
     start_floating_operation(true, true);
-    return floating_mixed_;
+    return floating_mixed_.data();
 }
 
-const std::vector<std::int16_t> &AudioBuffer::raw() const {
-    return raw_data_;
+const std::int16_t *AudioBuffer::raw() const {
+    return raw_data_.data();
 }
 
-std::vector<std::int16_t> &AudioBuffer::raw() {
-    return raw_data_;
+std::int16_t *AudioBuffer::raw() {
+    return raw_data_.data();
 }
 
 double AudioBuffer::timestamp() const {

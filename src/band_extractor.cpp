@@ -7,35 +7,28 @@
 using namespace score;
 
 
-void BandExtractor::process(const std::vector<std::int16_t>& input, std::vector<std::vector<std::int16_t>>& output) {
-    output.resize(Bands::NumberBands);
+void BandExtractor::process(const std::int16_t* input, std::size_t input_size, Matrix<int16_t >& output) {
 
-    const auto number_frames = input.size();
-    for (auto& band : output) {
-        output.resize(number_frames / Bands::NumberBands);
-    }
-
-    WebRtcSpl_AnalysisQMF(input.data(), input.size(),
-                          output[0].data(),
-                          output[0].data(),
+    const auto number_frames = input_size;
+    output.resize(NumberBands, number_frames / NumberBands);
+    WebRtcSpl_AnalysisQMF(input, input_size,
+                          output.row(Band0To8kHz).data(),
+                          output.row(Band8To16kHz).data(),
                           two_bands_state_.analysis_state1.data(),
                           two_bands_state_.analysis_state2.data());
 
 }
 
-void BandExtractor::synthesis(const std::vector<std::vector<std::int16_t>>& bands, std::vector<std::int16_t>& output) {
+void BandExtractor::synthesis(const Matrix<int16_t>& bands,  std::int16_t* output) {
     if (bands.size() != Bands::NumberBands) {
         throw std::runtime_error("Expected " + std::to_string(Bands::NumberBands) + " number of bands");
     }
 
-    const auto number_frames = bands.front().size() * Bands::NumberBands;
-    output.resize(number_frames);
-
     WebRtcSpl_SynthesisQMF(
-            bands[0].data(),
-            bands[1].data(),
-            bands[0].size(),
-            output.data(),
+            bands.row(Band0To8kHz).data(),
+            bands.row(Band8To16kHz).data(),
+            static_cast<size_t>(bands.cols()),
+            output,
             two_bands_state_.synthesis_state1.data(),
             two_bands_state_.synthesis_state2.data());
 

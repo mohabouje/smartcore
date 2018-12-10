@@ -29,8 +29,8 @@ struct DOA::Pimpl {
         }
     }
 
-    float gccPhat(const std::vector<float>& signal, const std::vector<float>& reference) {
-        const auto expected_size = 2 * signal.size();
+    float gccPhat(const float* signal, const float* reference, size_t size) {
+        const auto expected_size = 2 * size;
         if (expected_size != fft_size_) {
             reset();
 
@@ -50,11 +50,11 @@ struct DOA::Pimpl {
                     gcc_.data(), FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
         }
 
-        std::copy(signal.begin(), signal.end(), signal_.data());
-        std::fill(signal_.begin() + signal.size(), signal_.end(), 0.0f);
+        std::copy(signal, signal + size, signal_.data());
+        std::fill(signal_.begin() + size, signal_.end(), 0.0f);
 
-        std::copy(reference.begin(), reference.end(), reference_.data());
-        std::fill(reference_.begin() + reference.size(), reference_.end(), 0.0f);
+        std::copy(reference, reference + size, reference_.data());
+        std::fill(reference_.begin() + size, reference_.end(), 0.0f);
 
         fftwf_execute(signal_plan_);
         fftwf_execute(reference_plan_);
@@ -83,7 +83,9 @@ struct DOA::Pimpl {
 
         for (auto i = 0ul, size = tau_.size(); i < size; ++i) {
             const auto group = microphone_groups_[i];
-            tau_[i] = gccPhat(microphone_inputs.channel_f(group.first), microphone_inputs.channel_f(group.second));
+            tau_[i] = gccPhat(microphone_inputs.channel_f(group.first),
+                    microphone_inputs.channel_f(group.second),
+                    microphone_inputs.framesPerChannel());
             theta_[i] = static_cast<int>(std::asin(tau_[i] / maximum_tau_) * 180.0f / M_PI);
         }
 

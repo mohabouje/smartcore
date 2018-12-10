@@ -112,11 +112,11 @@ struct NoiseSuppression::Pimpl {
         output.resize(input.channels(), input.framesPerChannel());
         for (auto i = 0ul; i < channels_; ++i) {
 
-            input_bands_[Band0To8kHz] = input.band_f(i, Band0To8kHz).data();
-            input_bands_[Band8To16kHz] = input.band_f(i, Band8To16kHz).data();
+            input_bands_[Band0To8kHz] = input.band_f(i, Band0To8kHz);
+            input_bands_[Band8To16kHz] = input.band_f(i, Band8To16kHz);
 
-            output_bands_[Band0To8kHz] = output.band_f(i, Band0To8kHz).data();
-            output_bands_[Band8To16kHz] = output.band_f(i, Band8To16kHz).data();
+            output_bands_[Band0To8kHz] = output.band_f(i, Band0To8kHz);
+            output_bands_[Band8To16kHz] = output.band_f(i, Band8To16kHz);
 
             WebRtcNs_Analyze(handlers_[i]->core(), input_bands_[Band0To8kHz]);
             WebRtcNs_Process(handlers_[i]->core(), &input_bands_.front(),

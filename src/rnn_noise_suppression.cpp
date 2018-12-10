@@ -62,7 +62,7 @@ struct DeepNoiseSuppression::Pimpl {
 
         output.resize(input.channels(), input.framesPerChannel());
         for (auto i = 0ul; i < channels_; ++i) {
-            rnnoise_process_frame(handlers_[i]->core(), output.channel_f(i).data(), input.channel_f(i).data());
+            rnnoise_process_frame(handlers_[i]->core(), output.channel_f(i), input.channel_f(i));
         }
 
     }

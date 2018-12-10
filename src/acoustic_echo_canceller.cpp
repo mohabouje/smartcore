@@ -70,7 +70,7 @@ struct AEC::Pimpl {
         }
     
         output.resize(recorded.channels(), recorded.framesPerChannel());
-        speex_echo_cancellation(state_, recorded.raw().data(), played.raw().data(), output.raw().data());
+        speex_echo_cancellation(state_, recorded.raw(), played.raw(), output.raw());
     }
 
 private:

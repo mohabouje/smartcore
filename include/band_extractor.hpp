@@ -1,8 +1,8 @@
 #ifndef SMARTCORE_BAND_EXTRACTOR_HPP
 #define SMARTCORE_BAND_EXTRACTOR_HPP
 
+#include <types.hpp>
 #include <memory>
-#include <vector>
 #include <cstring>
 
 namespace score {
@@ -39,14 +39,14 @@ namespace score {
          * @param input Input buffer.
          * @param output Output buffer storing the different bands.
          */
-        void process(const std::vector<std::int16_t>& input, std::vector<std::vector<std::int16_t>>& output);
+        void process(const std::int16_t* input, std::size_t input_size, Matrix<int16_t >& output);
 
         /**
          * @brief Merges the low/high band in to a single audio frame.
          * @param bands Input buffer storing the different bands.
          * @param output Generated audio frame.
          */
-        void synthesis(const std::vector<std::vector<std::int16_t>> &bands, std::vector<std::int16_t>& output);
+        void synthesis(const Matrix<int16_t> &bands, std::int16_t * output);
 
     private:
         struct BandsStates {
