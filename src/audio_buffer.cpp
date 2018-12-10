@@ -7,18 +7,41 @@
 
 using namespace score;
 
+AudioBuffer::AudioBuffer(float sample_rate) : sample_rate_(sample_rate), fixed_data_still_valid_(true) {
+
+}
+
 AudioBuffer::AudioBuffer(float sample_rate, std::size_t channels, std::size_t frames_per_channel) :
-    sample_rate_(sample_rate) {
+    AudioBuffer(sample_rate) {
     resize(channels, frames_per_channel);
 }
 
-AudioBuffer::AudioBuffer(float sample_rate) : sample_rate_(sample_rate) {
-
+AudioBuffer::AudioBuffer(float sample_rate, std::size_t channels, std::size_t frames_per_channel, const int16_t *raw) :
+    AudioBuffer(sample_rate, channels, frames_per_channel) {
+    updateRaw(channels, frames_per_channel, raw);
 }
+
+void AudioBuffer::updateRaw(std::size_t channels, std::size_t frames_per_channel, const int16_t *raw) {
+    resize(channels, frames_per_channel);
+
+    for (auto i = 0ul; i < channels; ++i) {
+        for (auto j = 0ul, index = i; j < frames_per_channel; ++j, index += channels_) {
+            raw_data_[index] = raw[index];
+            fixed_data_[i][j] = raw[index];
+        }
+    }
+
+    fixed_data_still_valid_ = true;
+    invalidate_fixed_data(false, true, true);
+    invalidate_floating_data(true, true, true);
+}
+
+
 
 void score::AudioBuffer::resize(std::size_t channels, std::size_t frames_per_channel) {
     channels_ = channels;
     frames_ = frames_per_channel;
+    raw_data_.resize(channels * frames_per_channel);
     fixed_data_.resize(channels, std::vector<std::int16_t>(frames_per_channel));
     floating_data_.resize(channels, std::vector<float>(frames_per_channel));
     fixed_mixed_.resize(frames_per_channel);
@@ -292,3 +315,21 @@ const std::vector<float> &AudioBuffer::downmix_f() const {
     start_floating_operation(true, true);
     return floating_mixed_;
 }
+
+const std::vector<std::int16_t> &AudioBuffer::raw() const {
+    return raw_data_;
+}
+
+std::vector<std::int16_t> &AudioBuffer::raw() {
+    return raw_data_;
+}
+
+double AudioBuffer::timestamp() const {
+    return timestamp_;
+}
+
+void AudioBuffer::setTimestamp(double timestamp) {
+    timestamp_ = timestamp;
+}
+
+

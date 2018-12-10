@@ -3,7 +3,6 @@
 
 #include <audio_buffer.hpp>
 #include <memory>
-#include <vector>
 
 namespace score {
 

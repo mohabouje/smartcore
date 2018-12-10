@@ -2,8 +2,6 @@
 #define SMARTCORE_AUDIO_BUFFER_HPP
 
 #include <band_extractor.hpp>
-#include <memory>
-#include <vector>
 
 namespace score {
 
@@ -23,6 +21,15 @@ namespace score {
          * @param frames_per_channel Number of samples per buffer.
          */
         AudioBuffer(float sample_rate, std::size_t channels, std::size_t frames_per_channel);
+
+        /**
+         * @brief Creates an AudioBuffer with the given settings and copies the raw data.
+         * @param sample_rate  Sample rate in Hz.
+         * @param channels Number of channels in the audio buffer.
+         * @param frames_per_channel Number of samples per buffer.
+         * @param raw Array of raw data holding the audio samples.
+         */
+        AudioBuffer(float sample_rate, std::size_t channels, std::size_t frames_per_channel, const int16_t* raw);
 
         /**
          * @brief Returns the buffer sampling rate.
@@ -49,7 +56,6 @@ namespace score {
          */
         size_t numberBands() const;
 
-
         /**
          * @brief Resizes the internal buffer
          * @param channels Number of channels in the audio buffer.
@@ -62,6 +68,31 @@ namespace score {
          * @see Bands
          */
         void merge();
+
+        /**
+         * @bried Returns the time when the first sample of the buffer was processed in the sound card.
+         *
+         * @note In case of recording buffer, the timestamp represents the time when the first sample of
+         * the input buffer was captured at the ADC input. In case of playback recording buffer, the timestamp
+         * represent the time when the first sample of the output buffer will output the DAC
+         *
+         * @return Timestamp in seconds
+         */
+        double timestamp() const;
+
+        /**
+         * @brief Sets the time when the first sample of the buffer was processed by the sound card.
+         * @param timestamp Timestamp in seconds
+         */
+        void setTimestamp(double timestamp);
+
+        /**
+         * @brief Updates the internal raw data and invalidates all the existing data.
+         * @param channels Number of channels in the audio buffer.
+         * @param frames_per_channel Number of samples per buffer.
+         * @param raw Array of raw data holding the audio samples.
+         */
+        void updateRaw(std::size_t channels, std::size_t frames_per_channel, const int16_t* raw);
 
         /**
          * @brief Returns a mono signal generated from the low band of each channel in fixed point.
@@ -153,7 +184,22 @@ namespace score {
          */
         const std::vector<float>& band_f(std::size_t channel, Bands band) const;
 
+        /**
+         * @brief Returns the raw data of the input buffer
+         * The length of the array is equal to channels * framesPerBuffer
+         * @return Vector storing the internal raw data-
+         */
+        const std::vector<std::int16_t>& raw() const;
+
+        /**
+         * @brief Returns the raw data of the input buffer
+         * The length of the array is equal to channels * framesPerBuffer
+         * @return Vector storing the internal raw data-
+         */
+        std::vector<std::int16_t>& raw();
+
     private:
+
         /**
          * Invalidates the fixed point configuration flags
          * @param data Flag to update the fixed point audio buffers in each channel.
@@ -222,11 +268,13 @@ namespace score {
 
     private:
         float sample_rate_{};
+        double timestamp_{};
         std::size_t channels_{};
         std::size_t frames_{};
         std::vector<std::vector<std::int16_t>> fixed_data_{};
         std::vector<std::vector<float>> floating_data_{};
         std::vector<std::int16_t> fixed_mixed_{};
+        std::vector<std::int16_t> raw_data_{};
         std::vector<float> floating_mixed_{};
         std::vector<BandExtractor> band_extractor_{};
         std::vector<std::vector<std::vector<std::int16_t>>> fixed_bands_{};

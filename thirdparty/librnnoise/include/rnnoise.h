@@ -38,6 +38,10 @@
 # endif
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 typedef struct DenoiseState DenoiseState;
 
@@ -50,3 +54,7 @@ RNNOISE_EXPORT DenoiseState *rnnoise_create();
 RNNOISE_EXPORT void rnnoise_destroy(DenoiseState *st);
 
 RNNOISE_EXPORT float rnnoise_process_frame(DenoiseState *st, float *out, const float *in);
+
+#ifdef __cplusplus
+}
+#endif

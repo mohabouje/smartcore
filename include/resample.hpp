@@ -3,7 +3,6 @@
 
 #include <audio_buffer.hpp>
 #include <memory>
-#include <vector>
 
 namespace score {
 
@@ -14,26 +13,19 @@ namespace score {
          * in terms of output quality.
          */
         enum class Quality {
-            BestQuality		= 0,
-            MediumQuality,
-            SincFastest,
-            ZeroOrder,
-            Linear
+            HighQuality		= 10,
+            MediumQuality = 5,
+            LowQuality = 0,
         };
 
         /**
          * @brief Creates a re sampler with the given configuration
+         * @param channels Number of channels
          * @param quality  Quality of the re-sampling process.
-         * @param ratio   Re-sampling ratio (output sample rate / input sample rate)
+         * @param input_rate Input sampling rate in Hz.
+         * @param output_rate Output sampling rate in Hz.
          */
-        ReSampler(std::size_t channels, Quality quality, float ratio);
-
-        /**
-         * Checks if the ratio is valid.
-         * @param ratio
-         * @return True if the ratio is valid, false otherwise.
-         */
-        static bool isValidRatio(float ratio);
+        ReSampler(std::uint32_t channels, std::uint32_t input_rate, std::uint32_t output_rate, Quality quality);
 
         /**
          * @brief Default destructor

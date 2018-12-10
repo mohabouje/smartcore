@@ -12,7 +12,25 @@ namespace score {
     public:
 
         /**
-         * @brief Initialize a recorder in the default input device and with the defaul sample rate.
+         * @brief Returns the default input device index.
+         * @return Device index
+         */
+        static std::size_t DefaultInputDevice();
+
+        /**
+         * @brief Returns the default output device index.
+         * @return Device index
+         */
+        static std::size_t DefaultOutputDevice();
+
+        /**
+         * @brief Initialize the internal dependencies.
+         * This function should be called before any instantiation.
+         */
+        static void Initialize();
+
+        /**
+         * @brief Initialize a recorder in the default input device and with the default sample rate.
          * @param channels Number of channels of input signal.
          */
         explicit Recorder(std::size_t channels);
@@ -31,7 +49,7 @@ namespace score {
          * @param device_index Device Index
          * @param frames_per_buffer Number of frames per buffer.
          */
-        Recorder(float sample_rate, std::size_t channels, std::size_t device_index, std::size_t frames_per_buffer = 0);
+        Recorder(float sample_rate, std::size_t channels, std::size_t device_index = DefaultInputDevice(), std::size_t frames_per_buffer = 0);
 
         /**
          * @brief Default destructor
@@ -121,7 +139,7 @@ namespace score {
          * @brief Updates the listener that may be called when a frame is ready to be processed.
          * @param callback Callback to be called.
          */
-        void setOnProcessingBufferReady(const std::function<void(AudioBuffer& buffer)>& callback);
+        void setOnProcessingBufferReady(const std::function<void(AudioBuffer& record, AudioBuffer& play)>& callback);
 
         /**
          * @brief Re-initializes the block, clearing all state.

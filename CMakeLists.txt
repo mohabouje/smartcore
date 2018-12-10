@@ -24,7 +24,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         webrtc-noise
         webrtc-dsp
         fftw3f
-        portaudio)
+        portaudio
+        speexdsp)
 
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME}
@@ -33,3 +34,5 @@ install(TARGETS ${PROJECT_NAME}
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/smartmeet/core
         FILES_MATCHING PATTERN "*.hpp*")
+
+add_subdirectory(pipeline)

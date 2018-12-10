@@ -12,6 +12,7 @@ set(DSP_FILES
         common_audio/signal_processing/auto_corr_to_refl_coef.c
         common_audio/signal_processing/auto_corr_to_refl_coef.c
         common_audio/signal_processing/complex_bit_reverse.c
+        common_audio/signal_processing/copy_set_operations.c
         common_audio/signal_processing/complex_fft.c
         common_audio/signal_processing/cross_correlation.c
         common_audio/signal_processing/division_operations.c
@@ -27,10 +28,14 @@ set(DSP_FILES
         common_audio/signal_processing/randomization_functions.c
         common_audio/signal_processing/real_fft.c
         common_audio/signal_processing/refl_coef_to_lpc.c
+        common_audio/signal_processing/resample_fractional.c
         common_audio/signal_processing/resample.c
         common_audio/signal_processing/resample_48khz.c
         common_audio/signal_processing/resample_by_2.c
+        common_audio/signal_processing/resample_by_2_internal.h
+        common_audio/signal_processing/resample_by_2_internal.c
         common_audio/signal_processing/spl_init.c
+        common_audio/signal_processing/spl_sqrt.c
         common_audio/signal_processing/splitting_filter.c
         common_audio/signal_processing/sqrt_of_one_minus_x_squared.c
         common_audio/signal_processing/vector_scaling_operations.c)
@@ -38,6 +43,7 @@ set(DSP_FILES
 add_library(webrtc-dsp SHARED ${DSP_FILES})
 target_include_directories(webrtc-dsp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(webrtc-dsp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/modules/audio_processing/)
+target_compile_definitions(webrtc-dsp PRIVATE -DWEBRTC_POSIX)
 set_target_properties(webrtc-dsp PROPERTIES PUBLIC_HEADER
         common_audio/signal_processing/include/signal_processing_library.h)
 
@@ -54,11 +60,16 @@ set(NS_FILES
         modules/audio_processing/ns/noise_suppression.c
         modules/audio_processing/ns/ns_core.h
         modules/audio_processing/ns/ns_core.c
-        modules/audio_processing/ns/windows_private.h)
+        modules/audio_processing/ns/windows_private.h
+        common_audio/third_party/fft4g/fft4g.h
+        common_audio/third_party/fft4g/fft4g.c
+        rtc_base/checks.h
+        rtc_base/checks.cc)
 
 add_library(webrtc-noise SHARED ${NS_FILES})
 target_include_directories(webrtc-noise PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(webrtc-noise PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/modules/audio_processing/ns/)
+target_compile_definitions(webrtc-noise PRIVATE -D__native_client__)
 set_target_properties(webrtc-noise PROPERTIES PUBLIC_HEADER modules/audio_processing/ns/noise_suppression.h)
 
 include(GNUInstallDirs)
