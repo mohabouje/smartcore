@@ -48,15 +48,12 @@ struct DeepNoiseSuppression::Pimpl {
             throw std::invalid_argument("Expected an input frame with " + std::to_string(channels_) + " channels.");
         }
 
-        constexpr auto SampleRate = 48000;
-        constexpr auto BufferSize = 480;
-
-        if (input.sampleRate() != SampleRate) {
+        if (input.sampleRate() != DefaultSampleRate) {
             throw std::invalid_argument("Invalid sample rate. Supported sample rate: "
-            + std::to_string(SampleRate) + " Hz.");
+            + std::to_string(DefaultSampleRate) + " Hz.");
         }
 
-        if (input.framesPerChannel() != BufferSize) {
+        if (input.framesPerChannel() != DefaultBufferSize) {
             throw std::invalid_argument("Invalid length. Expected 480 samples and 48KHz as sample rate.");
         }
 
@@ -71,6 +68,9 @@ private:
     std::size_t channels_;
     std::vector<std::unique_ptr<Handler>> handlers_;
 };
+
+const float DeepNoiseSuppression::DefaultSampleRate = 48000.0f;
+const std::size_t DeepNoiseSuppression::DefaultBufferSize = 480;
 
 DeepNoiseSuppression::DeepNoiseSuppression(std::size_t channels) : pimpl_(std::make_unique<Pimpl>(channels)){}
 

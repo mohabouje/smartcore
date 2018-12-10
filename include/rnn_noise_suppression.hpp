@@ -9,6 +9,9 @@ namespace score {
     class DeepNoiseSuppression {
     public:
 
+        static const float DefaultSampleRate;
+        static const std::size_t DefaultBufferSize;
+
         /**
          * @brief Creates and initializes a Noise Suppression filter.
          * @param channels Number of channels.

@@ -1,8 +1,6 @@
 
 #include "recorder.hpp"
 #include <portaudio.h>
-#include <chrono>
-#include <iostream>
 
 using namespace score;
 
@@ -94,14 +92,8 @@ struct Recorder::Pimpl {
                      PaStreamCallbackFlags statusFlags) {
 
         auto *ptr = (const std::int16_t *) inputBuffer;
-
-        const auto t1 = std::chrono::high_resolution_clock::now();
         record_buffer_.updateRaw(channels_, frames_per_buffer_, ptr);
         record_buffer_.setTimestamp(timeInfo->currentTime + timeInfo->inputBufferAdcTime);
-        const auto t2 = std::chrono::high_resolution_clock::now();
-        const auto duration = std::chrono::duration_cast<std::chrono::microseconds>( t2 - t1 ).count();
-        std::cout << "Execution time: " << duration << std::endl;
-
         on_buffer_ready_(record_buffer_);
         return paContinue;
     }

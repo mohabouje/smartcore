@@ -35,17 +35,17 @@ private:
 struct NoiseSuppression::Pimpl {
 
 
-    Pimpl(std::size_t channels, float sample_rate, Policy policy) :
+    Pimpl(float sample_rate, std::size_t channels, Policy policy) :
         channels_(channels),
         sample_rate_(sample_rate),
         estimated_noise_(WebRtcNs_num_freq(), 0),
         handlers_(channels),
-        expected_frames_(0.01 * sample_rate_)
+        expected_frames_(static_cast<size_t>(0.01 * sample_rate_))
     {
         for (auto& smart_pointer : handlers_) {
             smart_pointer = std::make_unique<Handler>(sample_rate);
         }
-        setPolicy(policy_);
+        setPolicy(policy);
     }
 
     ~Pimpl() = default;
@@ -138,8 +138,8 @@ private:
     std::vector<std::unique_ptr<Handler>> handlers_{};
 };
 
-NoiseSuppression::NoiseSuppression(std::size_t channels, float sample_rate, Policy policy)
-: pimpl_(std::make_unique<Pimpl>(channels, sample_rate, policy)) {}
+NoiseSuppression::NoiseSuppression(float sample_rate, std::size_t channels, Policy policy)
+: pimpl_(std::make_unique<Pimpl>(sample_rate, channels, policy)) {}
 
 NoiseSuppression::~NoiseSuppression() = default;
 

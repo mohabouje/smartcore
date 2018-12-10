@@ -54,10 +54,6 @@ void AudioBuffer::split_helper() {
         return;
 
     fixed_bands_.resize(channels_);
-    for (auto& c : fixed_bands_) {
-        c.resize(Bands::NumberBands, frames_per_buffer_);
-    }
-
     for (auto i = 0ul; i < channels_; ++i) {
         band_extractor_[i].process(channel(i), frames_per_buffer_, fixed_bands_[i]);
     }
@@ -70,14 +66,14 @@ void AudioBuffer::split_helper_f() {
         return;
 
     start_fixed_operation(true);  //Refresh the bands, just in case.
-    floating_bands_.resize(channels_);
-    for (auto& c : floating_bands_) {
-        c.resize(Bands::NumberBands, frames_per_buffer_);
-    }
+
+    const auto rows = fixed_bands_.front().rows();
+    const auto cols = fixed_bands_.front().cols();
+    floating_bands_.resize(channels_, Matrix<float>(rows, cols));
 
     for (auto i = 0ul; i < channels_; ++i) {
-        for (auto j = 0ul; j < fixed_bands_.size(); ++j) {
-            for (auto z = 0ul; z < frames_per_buffer_; ++z) {
+        for (auto j = 0ul; j < rows; ++j) {
+            for (auto z = 0ul; z < cols; ++z) {
                 floating_bands_[i](j, z) = fixed_bands_[i](j, z);
             }
         }

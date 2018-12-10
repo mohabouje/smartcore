@@ -27,14 +27,14 @@ struct ReSampler::Pimpl {
             throw std::invalid_argument("Expected an input frame with " + std::to_string(channels_) + " channels.");
         }
 
-        if (output.sampleRate() != input_rate_) {
+        if (input.sampleRate() != input_rate_) {
             throw std::runtime_error("Expecting an input buffer of "
-                                     + std::to_string(input.sampleRate() * ratio_) + " Hz.");
+                                     + std::to_string(input_rate_) + " Hz.");
         }
 
         if (output.sampleRate() != output_rate_) {
             throw std::runtime_error("Expecting an output buffer of "
-                                     + std::to_string(input.sampleRate() * ratio_) + " Hz.");
+                                     + std::to_string(output_rate_) + " Hz.");
         }
 
         output.resize(input.channels(), static_cast<size_t>(input.framesPerChannel() * ratio_));

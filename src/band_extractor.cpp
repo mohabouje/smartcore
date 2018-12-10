@@ -20,7 +20,7 @@ void BandExtractor::process(const std::int16_t* input, std::size_t input_size, M
 }
 
 void BandExtractor::synthesis(const Matrix<int16_t>& bands,  std::int16_t* output) {
-    if (bands.size() != Bands::NumberBands) {
+    if (bands.rows() != Bands::NumberBands) {
         throw std::runtime_error("Expected " + std::to_string(Bands::NumberBands) + " number of bands");
     }
 
