@@ -16,7 +16,6 @@ int main() {
 
     auto recorder = std::make_unique<Recorder>(sample_rate,channels,
             device_index, frame_per_buffer);
-    auto aec = std::make_unique<AEC>(sample_rate, channels, channels, frame_per_buffer, filter_legnth);
 
     recorder->setOnRecordingStarted([](){
         std::cout << "Recording started" << std::endl;
@@ -24,10 +23,7 @@ int main() {
     recorder->setOnRecordingStopped([]() {
         std::cout << "Recording stopped" << std::endl;
     });
-    recorder->setOnProcessingBufferReady([&](AudioBuffer& recorded, AudioBuffer& played) {
-        std::cout << " Input Buffer: " << recorded.framesPerChannel() << " at " << recorded.timestamp()
-                  << " Output Buffer: " << played.framesPerChannel() << " at " << played.timestamp() << std::endl;
-        aec->process(recorded, played, recorded);
+    recorder->setOnProcessingBufferReady([&](AudioBuffer& recorded) {
     });
     recorder->record();
 

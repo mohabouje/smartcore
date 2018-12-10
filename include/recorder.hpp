@@ -15,13 +15,7 @@ namespace score {
          * @brief Returns the default input device index.
          * @return Device index
          */
-        static std::size_t DefaultInputDevice();
-
-        /**
-         * @brief Returns the default output device index.
-         * @return Device index
-         */
-        static std::size_t DefaultOutputDevice();
+        static int DefaultInputDevice();
 
         /**
          * @brief Initialize the internal dependencies.
@@ -49,7 +43,8 @@ namespace score {
          * @param device_index Device Index
          * @param frames_per_buffer Number of frames per buffer.
          */
-        Recorder(float sample_rate, std::size_t channels, std::size_t device_index = DefaultInputDevice(), std::size_t frames_per_buffer = 0);
+        Recorder(float sample_rate, std::size_t channels,
+                int device_index = DefaultInputDevice(), std::size_t frames_per_buffer = 0);
 
         /**
          * @brief Default destructor
@@ -115,13 +110,13 @@ namespace score {
          * @brief Returns the current device index.
          * @return Numeric value representing the device index.
          */
-        std::size_t deviceIndex() const;
+        int deviceIndex() const;
 
         /**
          * @brief Updates the streaming's device
          * @param index Numeric value representing the device index.
          */
-        void setDeviceIndex(std::size_t index);
+        void setDeviceIndex(int index);
 
         /**
          * @brief Updates the listener that may be called when the recording starts.
@@ -139,7 +134,7 @@ namespace score {
          * @brief Updates the listener that may be called when a frame is ready to be processed.
          * @param callback Callback to be called.
          */
-        void setOnProcessingBufferReady(const std::function<void(AudioBuffer& record, AudioBuffer& play)>& callback);
+        void setOnProcessingBufferReady(const std::function<void(AudioBuffer& buffer)>& callback);
 
         /**
          * @brief Re-initializes the block, clearing all state.
