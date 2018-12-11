@@ -68,7 +68,7 @@ namespace internal {
         }
     }
 
-    void gen_rir(Matrix<double>& imp,
+    double gen_rir(Matrix<double>& imp,
                    double c,
                    double fs,
                    const Vector<Point<float>>& rr,
@@ -135,7 +135,7 @@ namespace internal {
         int          nMicrophones = rr.size();
         double       beta[6];
         double       angle[2];
-        double       reverberation_time;
+        double       reverberation_time{0};
 
         if (beta_input.size() == 1) {
             double V = LL[0]*LL[1]*LL[2];
@@ -143,10 +143,10 @@ namespace internal {
             reverberation_time = beta_input[0];
             if (reverberation_time != 0) {
                 double alfa = 24*V*log(10.0)/(c*S*reverberation_time);
-                // if (alfa > 1)
-                // 	mexErrMsgTxt("Error: The reflection coefficients cannot be calculated using the current "
-                // 	             "room parameters, i.e. room size and reverberation time.\n           Please "
-                // 	             "specify the reflection coefficients or change the room parameters.");
+                 if (alfa > 1)
+                 	throw std::invalid_argument("Error: The reflection coefficients cannot be calculated using the current "
+                 	             "room parameters, i.e. room size and reverberation time.\n           Please "
+                 	             "specify the reflection coefficients or change the room parameters.");
                 for (int i=0;i<6;i++)
                     beta[i] = sqrt(1-alfa);
             } else {
@@ -163,30 +163,28 @@ namespace internal {
         angle[1] = orientation.second;
 
         // Room Dimension (optional)
-        // if (nDimension != 2 && nDimension != 3)
-        //     mexErrMsgTxt("Invalid input arguments! (9)");
         if (nDimension == 2) {
             beta[4] = 0;
             beta[5] = 0;
         }
 
         // Reflection order (optional)
-        if (nOrder < -1)
-        {
-            // mexErrMsgTxt("Invalid input arguments! (8)");
+        if (nOrder < -1) {
+           throw std::invalid_argument("Invalid reflection order. Expected a positive interger or -1 (maximum)");
         }
 
         // Number of samples (optional)
+        if (beta_input.size() > 1) {
+            double V = LL[0]*LL[1]*LL[2];
+            double alpha = ((1-pow(beta[0],2))+(1-pow(beta[1],2)))*LL[1]*LL[2] +
+                           ((1-pow(beta[2],2))+(1-pow(beta[3],2)))*LL[0]*LL[2] +
+                           ((1-pow(beta[4],2))+(1-pow(beta[5],2)))*LL[0]*LL[1];
+            reverberation_time = 24*log(10.0)*V/(c*alpha);
+            if (reverberation_time < 0.128)
+                reverberation_time = 0.128;
+        }
+
         if (nSamples == -1) {
-            if (beta_input.size() > 1) {
-                double V = LL[0]*LL[1]*LL[2];
-                double alpha = ((1-pow(beta[0],2))+(1-pow(beta[1],2)))*LL[1]*LL[2] +
-                               ((1-pow(beta[2],2))+(1-pow(beta[3],2)))*LL[0]*LL[2] +
-                               ((1-pow(beta[4],2))+(1-pow(beta[5],2)))*LL[0]*LL[1];
-                reverberation_time = 24*log(10.0)*V/(c*alpha);
-                if (reverberation_time < 0.128)
-                    reverberation_time = 0.128;
-            }
             nSamples = (int) (reverberation_time * fs);
         }
 
@@ -301,8 +299,8 @@ namespace internal {
                 }
             }
         }
+        return reverberation_time;
     }
-
 
 }
 
@@ -326,6 +324,7 @@ struct Reverberation::Pimpl {
     }
     
     void setReverberationTime(float t60) {
+        reverberation_time_ = t60;
         coefficients_ = {t60};
         updateNeeded();
     }
@@ -356,12 +355,10 @@ struct Reverberation::Pimpl {
         }
 
         if (updated_need_) {
-            internal::gen_rir(rir_, sound_speed_, sample_rate_, receivers_, source_, {width_, length_, height_},
-                              coefficients_, {azimuth_, elevation_}, 0, 3, reflection_order_, rir_size_, mode_);
+            reverberation_time_ = internal::gen_rir(rir_, sound_speed_, sample_rate_, receivers_, source_, {width_, length_, height_},
+                              coefficients_, {azimuth_, elevation_}, true, 3, reflection_order_, rir_size_, mode_);
             updated_need_ = false;
         }
-
-
 
         const auto fft_size = input.framesPerChannel();
         signal_input_.resize(fft_size, 0);
@@ -387,9 +384,9 @@ struct Reverberation::Pimpl {
         }
     }
 
-    std::size_t rir_size_{0};
     std::int8_t receivers_count_{0};
     std::int32_t sample_rate_{0};
+    double reverberation_time_{0};
     float sound_speed_{0};
     float azimuth_{0};
     float elevation_{0};
@@ -397,6 +394,7 @@ struct Reverberation::Pimpl {
     float width_{0};
     float length_{0};
     int reflection_order_{-1};
+    int rir_size_{-1};
     Vector<float> coefficients_{0};
     Vector<Point<float>> receivers_{};
     Point<float> source_{};
@@ -447,8 +445,7 @@ void Reverberation::setReverberationTime(float t60) {
 }
 
 float Reverberation::reverberationTime() const {
-    //TODO: this thing should be updated.
-    return pimpl_->coefficients_[0];
+    return pimpl_->reverberation_time_;
 }
 
 float Reverberation::height() const {
