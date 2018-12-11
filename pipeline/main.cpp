@@ -3,6 +3,8 @@
 #include <noise_suppression.hpp>
 #include <rnn_noise_suppression.hpp>
 #include <resample.hpp>
+#include <reverberation.hpp>
+
 #include <iostream>
 #include <chrono>
 
@@ -28,6 +30,9 @@ int main() {
     auto downsampler = std::make_unique<ReSampler>(channels, DeepNoiseSuppression::DefaultSampleRate,
             sample_rate, ReSampler::Quality::HighQuality);
 
+    auto reverb = std::make_unique<Reverberation>(sample_rate, channels);
+    reverb->setSource({0, 0, 0});
+    reverb->setReceivers({{0, 0, 0}});
 
     recorder->setOnRecordingStarted([](){
         std::cout << "Recording started" << std::endl;
@@ -40,6 +45,7 @@ int main() {
     AudioBuffer resampled(DeepNoiseSuppression::DefaultSampleRate, channels, DeepNoiseSuppression::DefaultBufferSize);
     recorder->setOnProcessingBufferReady([&](AudioBuffer& recorded) {
         denoiser->process(recorded, output);
+        reverb->process(output, output);
 
         upsampler->process(output, resampled);
         rnn_denoiser->process(resampled, resampled);

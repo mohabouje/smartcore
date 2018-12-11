@@ -1,5 +1,4 @@
-#include "residual_echo_suppression.hpp"
-
+#include "dereverberation.hpp"
 #include <speex/speex_preprocess.h>
 
 using namespace score;
@@ -22,9 +21,9 @@ struct Handler {
         int disable = 0, enable = 1;
         speex_preprocess_ctl(state_, SPEEX_PREPROCESS_SET_AGC, &disable);
         speex_preprocess_ctl(state_, SPEEX_PREPROCESS_SET_DENOISE, &disable);
-        speex_preprocess_ctl(state_, SPEEX_PREPROCESS_SET_DEREVERB, &disable);
+        speex_preprocess_ctl(state_, SPEEX_PREPROCESS_SET_DEREVERB, &enable);
         speex_preprocess_ctl(state_, SPEEX_PREPROCESS_SET_VAD, &disable);
-        speex_preprocess_ctl(state_, SPEEX_PREPROCESS_SET_ECHO_STATE, &enable);
+        speex_preprocess_ctl(state_, SPEEX_PREPROCESS_SET_ECHO_STATE, &disable);
     }
 
     ~Handler() {
@@ -38,15 +37,15 @@ struct Handler {
 };
 
 
-struct ResidualEchoSuppression::Pimpl {
+struct DeReverberation::Pimpl {
 
     Pimpl(std::int32_t sample_rate,
           std::int8_t channels,
           std::size_t frame_size) :
-        sample_rate_(sample_rate),
-        channels_(channels),
-        frame_size_(frame_size),
-        handlers_(channels, Handler(sample_rate, frame_size))
+            sample_rate_(sample_rate),
+            channels_(channels),
+            frame_size_(frame_size),
+            handlers_(static_cast<unsigned long>(channels), Handler(sample_rate, frame_size))
 
     {
 
@@ -92,28 +91,28 @@ struct ResidualEchoSuppression::Pimpl {
         }
     }
 
-    void setMaximumAttenuation(int attenuation_db) {
+    void setLevel(int level_db) {
         for (auto& h : handlers_) {
-            speex_preprocess_ctl(h.state_, SPEEX_PREPROCESS_SET_ECHO_SUPPRESS, &attenuation_db);
+            speex_preprocess_ctl(h.state_, SPEEX_PREPROCESS_SET_DEREVERB_LEVEL, &level_db);
         }
     }
 
-    void setMaximumAttenuationNearEnd(int attenuation_db) {
+    void setDecay(int decay) {
         for (auto& h : handlers_) {
-            speex_preprocess_ctl(h.state_, SPEEX_PREPROCESS_SET_ECHO_SUPPRESS_ACTIVE, &attenuation_db);
+            speex_preprocess_ctl(h.state_, SPEEX_PREPROCESS_SET_DEREVERB_DECAY, &decay);
         }
     }
 
-    int maximumAttenuation() const {
-        int attenuation_db = 0;
-        speex_preprocess_ctl(handlers_.front().state_, SPEEX_PREPROCESS_GET_ECHO_SUPPRESS, &attenuation_db);
-        return attenuation_db;
+    int level() const {
+        int level_db = 0;
+        speex_preprocess_ctl(handlers_.front().state_, SPEEX_PREPROCESS_GET_DEREVERB_LEVEL, &level_db);
+        return level_db;
     }
 
-    int maximumAttenuationNearEnd() const {
-        int attenuation_db = 0;
-        speex_preprocess_ctl(handlers_.front().state_, SPEEX_PREPROCESS_GET_ECHO_SUPPRESS_ACTIVE, &attenuation_db);
-        return attenuation_db;
+    int decay() const {
+        int decay = 0;
+        speex_preprocess_ctl(handlers_.front().state_, SPEEX_PREPROCESS_GET_DEREVERB_DECAY, &decay);
+        return decay;
     }
 
 private:
@@ -123,28 +122,26 @@ private:
     std::int8_t channels_;
 };
 
-ResidualEchoSuppression::ResidualEchoSuppression(std::int32_t sample_rate, std::int8_t channels, std::size_t frame_size) :
-        pimpl_(std::make_unique<Pimpl>(sample_rate, channels, frame_size)) {
+score::DeReverberation::DeReverberation(std::int32_t sample_rate, std::int8_t channels, std::size_t frames_per_buffer) :
+    pimpl_(std::make_unique<Pimpl>(sample_rate, channels, frames_per_buffer)) {
+
 }
 
-void ResidualEchoSuppression::process(const AudioBuffer &input, AudioBuffer &output) {
-    pimpl_->process(input, output);
+int score::DeReverberation::level() const {
+    return pimpl_->level();
 }
 
-void ResidualEchoSuppression::setMaximumAttenuation(int attenuation_db) {
-    pimpl_->setMaximumAttenuation(attenuation_db);
+void score::DeReverberation::setLevel(int level_db) {
+    pimpl_->setLevel(level_db);
 }
 
-void ResidualEchoSuppression::setMaximumAttenuationNearEnd(int attenuation_db) {
-    pimpl_->setMaximumAttenuationNearEnd(attenuation_db);
+int score::DeReverberation::decay() const {
+    return pimpl_->decay();
 }
 
-int ResidualEchoSuppression::maximumAttenuation() const {
-    return pimpl_->maximumAttenuation();
+void score::DeReverberation::setDecay(int decay) {
+    pimpl_->setDecay(decay);
+
 }
 
-int ResidualEchoSuppression::maximumAttenuationNearEnd() const {
-    return pimpl_->maximumAttenuationNearEnd();
-}
-
-score::ResidualEchoSuppression::~ResidualEchoSuppression() = default;
+score::DeReverberation::~DeReverberation() = default;

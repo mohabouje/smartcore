@@ -5,7 +5,7 @@ using namespace score;
 
 struct AEC::Pimpl {
 
-    Pimpl(std::size_t sample_rate,
+    Pimpl(std::int32_t sample_rate,
           std::size_t record_channels,
           std::size_t played_channels,
           std::size_t frame_size,
