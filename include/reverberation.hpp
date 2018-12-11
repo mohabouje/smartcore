@@ -103,6 +103,12 @@ namespace score {
         void setReverberationTime(float t60);
 
         /**
+         * @brief Sets the reflection coefficients of the room.
+         * @note Expected format: [beta_x1 beta_x2 beta_y1 beta_y2 beta_z1 beta_z2]
+         */
+        void setReflectionCoefficients(const Vector<float>& coefficients);
+
+        /**
          * @brief Returns the operation mode of the Reverberation block.
          * @return Mode of operation.
          */

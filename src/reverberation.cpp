@@ -74,7 +74,7 @@ namespace internal {
                    const Vector<Point<float>>& rr,
                    const Point<float>& ss,
                    const Point<float>& LL,
-                   const Vector<double>& beta_input,
+                   const Vector<float>& beta_input,
                    const std::pair<double, double>& orientation,
                    int isHighPassFilter,
                    int nDimension,
@@ -321,8 +321,21 @@ struct Reverberation::Pimpl {
         receivers_ = receivers;
     }
 
-    void update_needed() {
+    void updateNeeded() {
         updated_need_ = true;
+    }
+    
+    void setReverberationTime(float t60) {
+        coefficients_ = {t60};
+        updateNeeded();
+    }
+
+    void setReflectionCoefficients(const Vector<float> &coefficients) {
+        if (coefficients.size() != 6) {
+            throw std::invalid_argument("Expected time: [beta_x1 beta_x2 beta_y1 beta_y2 beta_z1 beta_z2]");
+        }
+        coefficients_ = coefficients;
+        updateNeeded();
     }
 
 
@@ -344,7 +357,7 @@ struct Reverberation::Pimpl {
 
         if (updated_need_) {
             internal::gen_rir(rir_, sound_speed_, sample_rate_, receivers_, source_, {width_, length_, height_},
-                              {reverberation_time_}, {azimuth_, elevation_}, 0, 3, reflection_order_, rir_size_, mode_);
+                              coefficients_, {azimuth_, elevation_}, 0, 3, reflection_order_, rir_size_, mode_);
             updated_need_ = false;
         }
 
@@ -380,11 +393,11 @@ struct Reverberation::Pimpl {
     float sound_speed_{0};
     float azimuth_{0};
     float elevation_{0};
-    float reverberation_time_{0};
     float height_{0};
     float width_{0};
     float length_{0};
     int reflection_order_{-1};
+    Vector<float> coefficients_{0};
     Vector<Point<float>> receivers_{};
     Point<float> source_{};
     Mode mode_{};
@@ -408,12 +421,12 @@ Reverberation::Reverberation(std::int32_t sample_rate, std::uint8_t receiver_cou
 void Reverberation::setReceiversOrientation(float azimuth, float elevation) {
     pimpl_->azimuth_ = azimuth;
     pimpl_->elevation_ = elevation;
-    pimpl_->update_needed();
+    pimpl_->updateNeeded();
 }
 
 void Reverberation::setReflectionOrder(int order) {
     pimpl_->reflection_order_ = order;
-    pimpl_->update_needed();
+    pimpl_->updateNeeded();
 }
 
 int Reverberation::reflectionOrder() const {
@@ -422,7 +435,7 @@ int Reverberation::reflectionOrder() const {
 
 void Reverberation::setMode(Reverberation::Mode mode) {
     pimpl_->mode_ = mode;
-    pimpl_->update_needed();
+    pimpl_->updateNeeded();
 }
 
 Reverberation::Mode Reverberation::mode() const {
@@ -430,12 +443,12 @@ Reverberation::Mode Reverberation::mode() const {
 }
 
 void Reverberation::setReverberationTime(float t60) {
-    pimpl_->reverberation_time_ = t60;
-    pimpl_->update_needed();
+    pimpl_->setReverberationTime(t60);
 }
 
 float Reverberation::reverberationTime() const {
-    return pimpl_->reverberation_time_;
+    //TODO: this thing should be updated.
+    return pimpl_->coefficients_[0];
 }
 
 float Reverberation::height() const {
@@ -454,12 +467,12 @@ void Reverberation::setRoomDimension(float width, float length, float height) {
     pimpl_->width_ = width;
     pimpl_->length_ = length;
     pimpl_->height_ = height;
-    pimpl_->update_needed();
+    pimpl_->updateNeeded();
 }
 
 void Reverberation::setSource(const Point<float> &position) {
     pimpl_->source_ = position;
-    pimpl_->update_needed();
+    pimpl_->updateNeeded();
 }
 
 const Point<float> &Reverberation::source() const {
@@ -476,7 +489,7 @@ const Vector<Point<float>> &Reverberation::receivers() const {
 
 void Reverberation::setSoundSpeed(float speed) {
     pimpl_->sound_speed_ = speed;
-    pimpl_->update_needed();
+    pimpl_->updateNeeded();
 }
 
 float Reverberation::soundSpeed() const {
@@ -489,6 +502,10 @@ const Matrix<double>& Reverberation::RIR() const {
 
 void Reverberation::process(const AudioBuffer &recorded, AudioBuffer &output) {
     pimpl_->process(recorded, output);
+}
+
+void Reverberation::setReflectionCoefficients(const Vector<float> &coefficients) {
+    pimpl_->setReflectionCoefficients(coefficients);
 }
 
 Reverberation::~Reverberation() = default;
