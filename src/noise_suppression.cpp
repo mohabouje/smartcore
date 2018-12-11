@@ -35,17 +35,17 @@ private:
 struct NoiseSuppression::Pimpl {
 
 
-    Pimpl(std::size_t channels, float sample_rate, Policy policy) :
+    Pimpl(float sample_rate, std::size_t channels, Policy policy) :
         channels_(channels),
         sample_rate_(sample_rate),
         estimated_noise_(WebRtcNs_num_freq(), 0),
         handlers_(channels),
-        expected_frames_(0.01 * sample_rate_)
+        expected_frames_(static_cast<size_t>(0.01 * sample_rate_))
     {
         for (auto& smart_pointer : handlers_) {
             smart_pointer = std::make_unique<Handler>(sample_rate);
         }
-        setPolicy(policy_);
+        setPolicy(policy);
     }
 
     ~Pimpl() = default;
@@ -112,11 +112,11 @@ struct NoiseSuppression::Pimpl {
         output.resize(input.channels(), input.framesPerChannel());
         for (auto i = 0ul; i < channels_; ++i) {
 
-            input_bands_[Band0To8kHz] = input.band_f(i, Band0To8kHz).data();
-            input_bands_[Band8To16kHz] = input.band_f(i, Band8To16kHz).data();
+            input_bands_[Band0To8kHz] = input.band_f(i, Band0To8kHz);
+            input_bands_[Band8To16kHz] = input.band_f(i, Band8To16kHz);
 
-            output_bands_[Band0To8kHz] = output.band_f(i, Band0To8kHz).data();
-            output_bands_[Band8To16kHz] = output.band_f(i, Band8To16kHz).data();
+            output_bands_[Band0To8kHz] = output.band_f(i, Band0To8kHz);
+            output_bands_[Band8To16kHz] = output.band_f(i, Band8To16kHz);
 
             WebRtcNs_Analyze(handlers_[i]->core(), input_bands_[Band0To8kHz]);
             WebRtcNs_Process(handlers_[i]->core(), &input_bands_.front(),
@@ -138,8 +138,8 @@ private:
     std::vector<std::unique_ptr<Handler>> handlers_{};
 };
 
-NoiseSuppression::NoiseSuppression(std::size_t channels, float sample_rate, Policy policy)
-: pimpl_(std::make_unique<Pimpl>(channels, sample_rate, policy)) {}
+NoiseSuppression::NoiseSuppression(float sample_rate, std::size_t channels, Policy policy)
+: pimpl_(std::make_unique<Pimpl>(sample_rate, channels, policy)) {}
 
 NoiseSuppression::~NoiseSuppression() = default;
 

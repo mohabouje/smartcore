@@ -1,19 +1,18 @@
 
-#include <recorder.hpp>
+#include "recorder.hpp"
 #include <portaudio.h>
 
 using namespace score;
 
 struct Recorder::Pimpl {
 
-    Pimpl(float sample_rate, std::size_t channels, std::size_t device_index, std::size_t frames_per_buffer) :
+    Pimpl(float sample_rate, std::size_t channels, int device_index, std::size_t frames_per_buffer) :
         device_index_(device_index),
         channels_(channels),
         frames_per_buffer_(static_cast<size_t>(frames_per_buffer ? frames_per_buffer : sample_rate / 100)),
         sample_rate_(sample_rate),
-        record_buffer_(sample_rate, channels, frames_per_buffer),
-        play_buffer_(sample_rate, channels, frames_per_buffer)
-    {
+        record_buffer_(sample_rate, channels, frames_per_buffer)
+        {
         restart();
     }
 
@@ -34,18 +33,18 @@ struct Recorder::Pimpl {
         on_recording_stopped_ = callback;
     }
 
-    void setOnProcessingBufferReady(const std::function<void(AudioBuffer& record, AudioBuffer& play)>& callback) {
+    void setOnProcessingBufferReady(const std::function<void(AudioBuffer& buffer)>& callback) {
         on_buffer_ready_ = callback;
     }
 
     void restart() {
         input_params_.channelCount = static_cast<int>(channels_);
-        input_params_.device = static_cast<PaDeviceIndex>(device_index_);
+        input_params_.device = device_index_;
         input_params_.sampleFormat = paInt16;
         input_params_.suggestedLatency = Pa_GetDeviceInfo(device_index_)->defaultLowInputLatency;
-        input_params_.hostApiSpecificStreamInfo = NULL;
+        input_params_.hostApiSpecificStreamInfo = nullptr;
 
-        const PaError err = Pa_OpenStream(&stream_, &input_params_, NULL, sample_rate_,
+        const PaError err = Pa_OpenStream(&stream_, &input_params_, nullptr, sample_rate_,
                 frames_per_buffer_, paClipOff, &Pimpl::PortAudioCallback, this);
 
         if (err != paNoError) {
@@ -58,8 +57,7 @@ struct Recorder::Pimpl {
             return true;
         }
 
-        const PaError err = Pa_StartStream(stream_);
-        if (err != paNoError) {
+        if (auto err = Pa_StartStream(stream_) != paNoError) {
             throw std::runtime_error(Pa_GetErrorText(err));
         }
 
@@ -75,8 +73,7 @@ struct Recorder::Pimpl {
             return true;
         }
 
-        PaError err = Pa_StopStream(stream_);
-        if ( err != paNoError ) {
+        if (auto err =  Pa_StopStream(stream_) != paNoError ) {
             throw std::runtime_error(Pa_GetErrorText(err));
         }
 
@@ -94,11 +91,10 @@ struct Recorder::Pimpl {
                      const PaStreamCallbackTimeInfo *timeInfo,
                      PaStreamCallbackFlags statusFlags) {
 
-        record_buffer_.updateRaw(channels_, frames_per_buffer_, static_cast<const std::int16_t*>(inputBuffer));
+        auto *ptr = (const std::int16_t *) inputBuffer;
+        record_buffer_.updateRaw(channels_, frames_per_buffer_, ptr);
         record_buffer_.setTimestamp(timeInfo->currentTime + timeInfo->inputBufferAdcTime);
-
-        play_buffer_.setTimestamp(timeInfo->currentTime + timeInfo->outputBufferDacTime);
-        on_buffer_ready_(record_buffer_, play_buffer_);
+        on_buffer_ready_(record_buffer_);
         return paContinue;
     }
 
@@ -108,7 +104,7 @@ struct Recorder::Pimpl {
         output_params.device = Pa_GetDefaultOutputDevice();
         output_params.sampleFormat = paInt16;
         output_params.suggestedLatency = Pa_GetDeviceInfo(output_params.device)->defaultLowInputLatency;
-        output_params.hostApiSpecificStreamInfo = NULL;
+        output_params.hostApiSpecificStreamInfo = nullptr;
         return static_cast<bool>(Pa_IsFormatSupported(&input_params_, &output_params, sample_rate));
     }
 
@@ -120,9 +116,9 @@ struct Recorder::Pimpl {
     }
 
 
-    void setDeviceIndex(std::size_t index) {
+    void setDeviceIndex(PaDeviceIndex index) {
         if (index > Pa_GetDeviceCount()) {
-            throw std::invalid_argument("Index out of bounds. Available decies: "
+            throw std::invalid_argument("Index out of bounds. Available devices: "
             + std::to_string(Pa_GetDeviceCount()));
         }
 
@@ -148,22 +144,21 @@ struct Recorder::Pimpl {
 
     PaStream*               stream_{nullptr};
     PaStreamParameters      input_params_{};
+    PaDeviceIndex device_index_;
 
-    std::size_t device_index_;
     std::size_t channels_;
     std::size_t frames_per_buffer_;
     float sample_rate_;
 
 
     AudioBuffer record_buffer_;
-    AudioBuffer play_buffer_;
     std::function<void()> on_recording_started_{nullptr};
     std::function<void()> on_recording_stopped_{nullptr};
-    std::function<void(AudioBuffer& record, AudioBuffer& play)> on_buffer_ready_{nullptr};
+    std::function<void(AudioBuffer& buffer)> on_buffer_ready_{nullptr};
 
 };
 
-Recorder::Recorder(float sample_rate, std::size_t channels,  std::size_t device_index, std::size_t frames_per_buffer) :
+Recorder::Recorder(float sample_rate, std::size_t channels,  int device_index, std::size_t frames_per_buffer) :
     pimpl_(std::make_unique<Pimpl>(sample_rate, channels, device_index, frames_per_buffer)) {
 
 }
@@ -192,15 +187,15 @@ void Recorder::setOnRecordingStopped(const std::function<void()> &callback) {
     pimpl_->setOnRecordingStopped(callback);
 }
 
-void Recorder::setOnProcessingBufferReady(const std::function<void(AudioBuffer& record, AudioBuffer& play)> &callback) {
+void Recorder::setOnProcessingBufferReady(const std::function<void(AudioBuffer& buffer)> &callback) {
     pimpl_->setOnProcessingBufferReady(callback);
 }
 
-std::size_t Recorder::deviceIndex() const {
+int Recorder::deviceIndex() const {
     return pimpl_->device_index_;
 }
 
-void Recorder::setDeviceIndex(std::size_t index) {
+void Recorder::setDeviceIndex(int index) {
     pimpl_->setDeviceIndex(index);
 }
 
@@ -240,12 +235,12 @@ std::string Recorder::deviceName() const {
     return  Pa_GetDeviceInfo(pimpl_->device_index_)->name;;
 }
 
-std::size_t score::Recorder::DefaultInputDevice() {
-    return static_cast<size_t>(Pa_GetDefaultInputDevice());
-}
-
-std::size_t score::Recorder::DefaultOutputDevice() {
-    return static_cast<size_t>(Pa_GetDefaultOutputDevice());
+int score::Recorder::DefaultInputDevice() {
+    const auto index = Pa_GetDefaultInputDevice();
+    if (index == paNoDevice) {
+        throw std::runtime_error("Non input device found");
+    }
+    return index;
 }
 
 void score::Recorder::Initialize() {

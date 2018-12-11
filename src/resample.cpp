@@ -27,21 +27,21 @@ struct ReSampler::Pimpl {
             throw std::invalid_argument("Expected an input frame with " + std::to_string(channels_) + " channels.");
         }
 
-        if (output.sampleRate() != input_rate_) {
+        if (input.sampleRate() != input_rate_) {
             throw std::runtime_error("Expecting an input buffer of "
-                                     + std::to_string(input.sampleRate() * ratio_) + " Hz.");
+                                     + std::to_string(input_rate_) + " Hz.");
         }
 
         if (output.sampleRate() != output_rate_) {
             throw std::runtime_error("Expecting an output buffer of "
-                                     + std::to_string(input.sampleRate() * ratio_) + " Hz.");
+                                     + std::to_string(output_rate_) + " Hz.");
         }
 
         output.resize(input.channels(), static_cast<size_t>(input.framesPerChannel() * ratio_));
 
-        auto input_size = static_cast<uint32_t>(input.raw().size()), output_size = static_cast<uint32_t>(output.raw().size());
-        error_ = speex_resampler_process_interleaved_int(state_, input.raw().data(), &input_size,
-                output.raw().data(), &output_size);
+        auto input_size = static_cast<uint32_t>(input.framesPerChannel() * input.channels()),
+            output_size = static_cast<uint32_t>(output.framesPerChannel() * output.channels());
+        error_ = speex_resampler_process_interleaved_int(state_, input.raw(), &input_size, output.raw(), &output_size);
         ensure_no_error();
     }
 

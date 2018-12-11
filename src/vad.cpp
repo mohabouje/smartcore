@@ -90,7 +90,7 @@ void VAD::reset() {
 }
 
 bool VAD::process(const AudioBuffer &samples) {
-    return pimpl_->process(samples.downmix().data(), samples.framesPerChannel());
+    return pimpl_->process(samples.downmix(), samples.framesPerChannel());
 }
 
 VAD::~VAD() = default;

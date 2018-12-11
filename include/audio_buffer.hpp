@@ -2,6 +2,7 @@
 #define SMARTCORE_AUDIO_BUFFER_HPP
 
 #include <band_extractor.hpp>
+#include <types.hpp>
 
 namespace score {
 
@@ -104,55 +105,55 @@ namespace score {
          * @brief Returns a mono signal generated from the low band of each channel in fixed point.
          * @return Down mixed signal in fixed point.
          */
-        const std::vector<std::int16_t>& downmix() const;
+        const std::int16_t* downmix() const;
 
         /**
          * @brief Returns a mono signal generated from the low band of each channel in floating point.
          * @return Down mixed signal in floating point.
          */
-        const std::vector<float>& downmix_f() const;
+        const float* downmix_f() const;
 
         /**
          * @brief Returns the buffer of the given channel.
          * @param channel Desired channel.
          * @return The channel's buffer.
          */
-        std::vector<std::int16_t>& channel(std::size_t channel);
+        std::int16_t* channel(std::size_t channel);
 
         /**
          * @brief Returns the buffer of the given channel.
          * @param channel Desired channel.
          * @return The channel's buffer.
          */
-        const std::vector<std::int16_t>& channel(std::size_t channel) const;
+        const std::int16_t* channel(std::size_t channel) const;
 
         /**
          * @brief Returns the buffer of the given channel.
          * @param channel Desired channel.
          * @return The channel's buffer.
          */
-        std::vector<float>& channel_f(std::size_t channel);
+        float* channel_f(std::size_t channel);
 
         /**
          * @brief Returns the buffer of the given channel.
          * @param channel Desired channel.
          * @return The channel's buffer.
          */
-        const std::vector<float>& channel_f(std::size_t channel) const;
+        const float* channel_f(std::size_t channel) const;
 
         /**
          * @brief Returns the buffer of the given channel.
          * @param channel Desired channel.
          * @return The channel's buffer.
          */
-        std::vector<std::int16_t >& operator[](std::size_t channel);
+        std::int16_t* operator[](std::size_t channel);
 
         /**
          * @brief Returns the buffer of the given channel.
          * @param channel Desired channel.
          * @return The channel's buffer.
          */
-        const std::vector<std::int16_t >& operator[](std::size_t channel) const;
+        const std::int16_t* operator[](std::size_t channel) const;
 
         /**
          * @brief Returns the band's buffer of the given channel.
@@ -161,7 +162,7 @@ namespace score {
          * @see band
          * @return The channel's buffer in the given band.
          */
-        std::vector<std::int16_t>& band(std::size_t channel, Bands band);
+        std::int16_t* band(std::size_t channel, Bands band);
 
         /**
          * @brief Returns the band's buffer of the given channel.
@@ -170,7 +171,7 @@ namespace score {
          * @see band
          * @return The channel's buffer in the given band.
          */
-        const std::vector<std::int16_t>& band(std::size_t channel, Bands band) const;
+        const std::int16_t* band(std::size_t channel, Bands band) const;
 
         /**
          * @brief Returns the band's buffer of the given channel.
@@ -179,7 +180,7 @@ namespace score {
          * @see band
          * @return The channel's buffer in the given band.
          */
-        std::vector<float>& band_f(std::size_t channel, Bands band);
+        float* band_f(std::size_t channel, Bands band);
 
         /**
          * @brief Returns the band's buffer of the given channel.
@@ -188,21 +189,21 @@ namespace score {
          * @see band
          * @return The channel's buffer in the given band.
          */
-        const std::vector<float>& band_f(std::size_t channel, Bands band) const;
+        const float* band_f(std::size_t channel, Bands band) const;
 
         /**
          * @brief Returns the raw data of the input buffer
          * The length of the array is equal to channels * framesPerBuffer
          * @return Vector storing the internal raw data-
          */
-        const std::vector<std::int16_t>& raw() const;
+        const std::int16_t* raw() const;
 
         /**
          * @brief Returns the raw data of the input buffer
          * The length of the array is equal to channels * framesPerBuffer
          * @return Vector storing the internal raw data-
          */
-        std::vector<std::int16_t>& raw();
+        std::int16_t* raw();
 
     private:
 
@@ -276,15 +277,15 @@ namespace score {
         float sample_rate_{};
         double timestamp_{};
         std::size_t channels_{};
-        std::size_t frames_{};
-        std::vector<std::vector<std::int16_t>> fixed_data_{};
-        std::vector<std::vector<float>> floating_data_{};
-        std::vector<std::int16_t> fixed_mixed_{};
-        std::vector<std::int16_t> raw_data_{};
-        std::vector<float> floating_mixed_{};
-        std::vector<BandExtractor> band_extractor_{};
-        std::vector<std::vector<std::vector<std::int16_t>>> fixed_bands_{};
-        std::vector<std::vector<std::vector<float>>> floating_bands_{};
+        std::size_t frames_per_buffer_{};
+        Matrix<std::int16_t> fixed_data_{};
+        Matrix<float> floating_data_{};
+        Vector<std::int16_t> fixed_mixed_{};
+        Vector<float> floating_mixed_{};
+        Vector<std::int16_t> raw_data_{};
+        Tensor<std::int16_t> fixed_bands_{};
+        Tensor<float> floating_bands_{};
+        Vector<BandExtractor> band_extractor_{};
         bool fixed_data_still_valid_{false};
         bool floating_data_still_valid_{false};
         bool fixed_bands_still_valid_{false};
