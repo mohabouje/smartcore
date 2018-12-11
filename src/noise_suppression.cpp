@@ -109,6 +109,7 @@ struct NoiseSuppression::Pimpl {
             + std::to_string(expected_frames_) + " samples per buffer");
         }
 
+        output.setSampleRate(sample_rate_);
         output.resize(input.channels(), input.framesPerChannel());
         for (auto i = 0ul; i < channels_; ++i) {
 

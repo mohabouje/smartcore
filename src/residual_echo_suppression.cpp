@@ -62,7 +62,7 @@ struct ResidualEchoSuppression::Pimpl {
 
     void process(const AudioBuffer& input, AudioBuffer& output) {
 
-        if (input.sampleRate() != output.sampleRate() || input.sampleRate() != sample_rate_) {
+        if (input.sampleRate() != sample_rate_) {
             throw std::invalid_argument("Discrepancy in sampling rate. Expected "
                                         + std::to_string(sample_rate_) + " Hz");
         }
@@ -72,13 +72,12 @@ struct ResidualEchoSuppression::Pimpl {
                                         + std::to_string(channels_) + " channels.");
         }
 
-
-        int frame_size = 0;
         if (input.framesPerChannel() != frame_size_) {
-            throw std::invalid_argument("The AEC is configure to work with " + std::to_string(frame_size)
+            throw std::invalid_argument("The AEC is configure to work with " + std::to_string(frame_size_)
                                         + " frames per buffer.");
         }
 
+        output.setSampleRate(sample_rate_);
         output.resize(input.channels(), input.framesPerChannel());
         for (auto i = 0ul; i < channels_; ++i) {
             const auto* in = input.channel(i);

@@ -7,7 +7,12 @@
 
 using namespace score;
 
-AudioBuffer::AudioBuffer(float sample_rate) : sample_rate_(sample_rate), fixed_data_still_valid_(true) {
+
+AudioBuffer::AudioBuffer() {
+
+}
+
+AudioBuffer::AudioBuffer(float sample_rate) : sample_rate_(sample_rate) {
 
 }
 
@@ -323,7 +328,10 @@ void AudioBuffer::setTimestamp(double timestamp) {
 }
 
 std::size_t AudioBuffer::size() const {
-    return channels_ * frames_;
+    return channels_ * frames_per_buffer_;
 }
 
+void AudioBuffer::setSampleRate(float sample_rate) {
+    sample_rate_ = sample_rate;
+}
 

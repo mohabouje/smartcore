@@ -34,13 +34,13 @@ namespace score {
          * @brief Returns an array with all the supported sample rates in Hz.
          * @return An array storing all the supported sample rates in Hz.
          */
-        static std::vector<std::int32_t> supportedSampleRates();
+        static std::vector<std::int32_t> SupportedSampleRates();
 
         /**
          * @brief Returns an array with all the supported frame length in msecs.
          * @return An array storing all the supported frame length in msecs.
          */
-        static std::vector<std::int32_t> supportedFrameLength();
+        static std::vector<std::int32_t> SupportedFrameLength();
 
         /**
          * @brief Sets the input sample rate in Hz for a VAD instance.
@@ -96,7 +96,7 @@ namespace score {
          * @throws std::invalid_argument if the length of the frame is invalid.
          * @return True in case of voice activity, false otherwise.
          */
-        bool process(const AudioBuffer& samples);
+        bool process(const AudioBuffer& input);
 
     private:
         struct Pimpl;

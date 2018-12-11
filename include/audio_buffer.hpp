@@ -10,6 +10,11 @@ namespace score {
     public:
 
         /**
+         * @brief Default destructor
+         */
+        AudioBuffer();
+
+        /**
          * @brief Creates an empty AudioBuffer with the given sample rate
          * @param sample_rate Sample rate in Hz.
          */
@@ -31,6 +36,12 @@ namespace score {
          * @param raw Array of raw data holding the audio samples.
          */
         AudioBuffer(float sample_rate, std::size_t channels, std::size_t frames_per_channel, const int16_t* raw);
+
+        /**
+         * @brief Set the buffer sampling rate.
+         * @param sample_rate Sampling rate in Hz.
+         */
+        void setSampleRate(float sample_rate);
 
         /**
          * @brief Returns the buffer sampling rate.
@@ -286,7 +297,7 @@ namespace score {
         Tensor<std::int16_t> fixed_bands_{};
         Tensor<float> floating_bands_{};
         Vector<BandExtractor> band_extractor_{};
-        bool fixed_data_still_valid_{false};
+        bool fixed_data_still_valid_{true};
         bool floating_data_still_valid_{false};
         bool fixed_bands_still_valid_{false};
         bool floating_bands_still_valid_{false};

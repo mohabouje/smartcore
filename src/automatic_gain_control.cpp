@@ -103,22 +103,18 @@ struct AGC::Pimpl {
                                         + std::to_string(processor_->sample_rate_hz()) + " Hz.");
         }
 
-        if (input.sampleRate() != output.sampleRate()) {
-            throw std::invalid_argument("Discrepancies between the input/output sample rates");
-        }
-
         frame_.UpdateFrame(0,
                           static_cast<const WebRtc_UWord32>(input.timestamp()),
-                          input.raw().data(),
+                          input.raw(),
                           static_cast<const WebRtc_UWord16>(input.size()),
                           static_cast<const int>(input.sampleRate()),
                           webrtc::AudioFrame::SpeechType::kNormalSpeech,
                           webrtc::AudioFrame::VADActivity::kVadUnknown,
                           static_cast<const WebRtc_UWord8>(input.framesPerChannel()));
         processor_->ProcessStream(&frame_);
+        output.setSampleRate(processor_->sample_rate_hz());
         output.updateRaw(input.channels(), input.framesPerChannel(), frame_._payloadData);
     }
-
 
     webrtc::AudioProcessing* processor_{nullptr};
     webrtc::AudioFrame frame_;

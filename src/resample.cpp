@@ -32,11 +32,7 @@ struct ReSampler::Pimpl {
                                      + std::to_string(input_rate_) + " Hz.");
         }
 
-        if (output.sampleRate() != output_rate_) {
-            throw std::runtime_error("Expecting an output buffer of "
-                                     + std::to_string(output_rate_) + " Hz.");
-        }
-
+        output.setSampleRate(output_rate_);
         output.resize(input.channels(), static_cast<size_t>(input.framesPerChannel() * ratio_));
 
         auto input_size = static_cast<uint32_t>(input.framesPerChannel() * input.channels()),

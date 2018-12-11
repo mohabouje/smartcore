@@ -35,10 +35,22 @@ struct VAD::Pimpl {
         return static_cast<int>(sample_rate_);
     }
 
-    bool process(const std::int16_t *samples, std::size_t numberSamples) {
-        const auto result = fvad_process(processor_, samples, numberSamples);
+    bool process(const AudioBuffer &input) {
+        static auto valid_frame_lengths = SupportedFrameLength();
+        if (input.sampleRate() != sample_rate_) {
+            throw std::invalid_argument("Invalid sample rate. Supported sample rate: "
+                                        + std::to_string(sample_rate_) + " Hz.");
+        }
+
+        const auto frame_length = static_cast<std::size_t >(input.framesPerChannel() / sample_rate_);
+        const auto iter = std::find(valid_frame_lengths.begin(), valid_frame_lengths.end(), frame_length);
+        if (iter == valid_frame_lengths.end()) {
+            throw std::invalid_argument("Invalid frame legnth");
+        }
+
+        const auto result = fvad_process(processor_, input.downmix(), input.framesPerChannel());
         if (result == -1) {
-            throw std::invalid_argument("Invalid frame length. Must be either 10, 20 or 30 msecs.");
+            throw std::runtime_error("Unexpected error");
         }
         return (bool) result;
     }
@@ -61,11 +73,11 @@ VAD::VAD(std::int32_t sampleRate) : pimpl_(std::make_unique<Pimpl>(sampleRate)) 
 
 }
 
-std::vector<std::int32_t> VAD::supportedSampleRates() {
+std::vector<std::int32_t> VAD::SupportedSampleRates() {
     return {8000, 16000, 32000, 48000};
 }
 
-std::vector<std::int32_t> VAD::supportedFrameLength() {
+std::vector<std::int32_t> VAD::SupportedFrameLength() {
     return {10, 20, 30 };
 }
 
@@ -89,8 +101,8 @@ void VAD::reset() {
     pimpl_->reset();
 }
 
-bool VAD::process(const AudioBuffer &samples) {
-    return pimpl_->process(samples.downmix(), samples.framesPerChannel());
+bool VAD::process(const AudioBuffer &input) {
+    return pimpl_->process(input);
 }
 
 VAD::~VAD() = default;

@@ -47,8 +47,7 @@ struct AEC::Pimpl {
         int sample_rate = 0;
         speex_echo_ctl(state_, SPEEX_ECHO_GET_SAMPLING_RATE, &sample_rate);
 
-        if (recorded.sampleRate() != played.sampleRate()
-                || recorded.sampleRate() != output.sampleRate() || recorded.sampleRate() != sample_rate) {
+        if (recorded.sampleRate() != played.sampleRate() || recorded.sampleRate() != sample_rate) {
             throw std::invalid_argument("Discrepancy in sampling rate. Expected " + std::to_string(sample_rate) + " Hz");
         }
         
@@ -68,7 +67,8 @@ struct AEC::Pimpl {
             throw std::invalid_argument("The AEC is configure to work with " + std::to_string(frame_size)
             + " frames per buffer.");
         }
-    
+
+        output.setSampleRate(sample_rate);
         output.resize(recorded.channels(), recorded.framesPerChannel());
         speex_echo_cancellation(state_, recorded.raw(), played.raw(), output.raw());
     }
