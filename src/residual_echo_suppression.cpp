@@ -41,7 +41,7 @@ struct Handler {
 struct ResidualEchoSuppression::Pimpl {
 
     Pimpl(std::size_t sample_rate,
-          std::size_t channels,
+          std::int8_t channels,
           std::size_t frame_size) :
         sample_rate_(sample_rate),
         channels_(channels),
@@ -120,10 +120,10 @@ private:
     std::vector<Handler> handlers_;
     std::size_t sample_rate_;
     std::size_t frame_size_;
-    std::size_t channels_;
+    std::int8_t channels_;
 };
 
-ResidualEchoSuppression::ResidualEchoSuppression(float sample_rate, std::size_t channels, std::size_t frame_size) :
+ResidualEchoSuppression::ResidualEchoSuppression(std::int32_t sample_rate, std::int8_t channels, std::size_t frame_size) :
         pimpl_(std::make_unique<Pimpl>(sample_rate, channels, frame_size)) {
 }
 

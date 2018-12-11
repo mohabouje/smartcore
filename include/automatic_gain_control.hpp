@@ -47,7 +47,7 @@ namespace score {
          * @param channels Number of channels.
          * @param mode Operational mode.
          */
-        AGC(float sample_rate, std::size_t channels, Mode = Mode::AdaptiveDigital);
+        AGC(std::int32_t sample_rate, std::int8_t channels, Mode = Mode::AdaptiveDigital);
 
         /**
          * @brief Default destructor.

@@ -79,7 +79,7 @@ private:
     std::size_t play_channels_;
 };
 
-score::AEC::AEC(float sample_rate, std::size_t record_channels, std::size_t played_channels, std::size_t frame_size,
+score::AEC::AEC(std::int32_t sample_rate, std::size_t record_channels, std::size_t played_channels, std::size_t frame_size,
                 std::size_t filter_length) :
     pimpl_(std::make_unique<Pimpl>(sample_rate, record_channels, played_channels, frame_size, filter_length)) {
 

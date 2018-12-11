@@ -18,7 +18,7 @@ namespace score {
          * @brief Creates an empty AudioBuffer with the given sample rate
          * @param sample_rate Sample rate in Hz.
          */
-        explicit AudioBuffer(float sample_rate);
+        explicit AudioBuffer(std::int32_t sample_rate);
 
         /**
          * @brief Creates an AudioBuffer with the given settings.
@@ -26,7 +26,7 @@ namespace score {
          * @param channels Number of channels in the audio buffer.
          * @param frames_per_channel Number of samples per buffer.
          */
-        AudioBuffer(float sample_rate, std::size_t channels, std::size_t frames_per_channel);
+        AudioBuffer(std::int32_t sample_rate, std::int8_t channels, std::size_t frames_per_channel);
 
         /**
          * @brief Creates an AudioBuffer with the given settings and copies the raw data.
@@ -35,25 +35,25 @@ namespace score {
          * @param frames_per_channel Number of samples per buffer.
          * @param raw Array of raw data holding the audio samples.
          */
-        AudioBuffer(float sample_rate, std::size_t channels, std::size_t frames_per_channel, const int16_t* raw);
+        AudioBuffer(std::int32_t sample_rate, std::int8_t channels, std::size_t frames_per_channel, const int16_t* raw);
 
         /**
          * @brief Set the buffer sampling rate.
          * @param sample_rate Sampling rate in Hz.
          */
-        void setSampleRate(float sample_rate);
+        void setSampleRate(std::int32_t sample_rate);
 
         /**
          * @brief Returns the buffer sampling rate.
          * @return Sample rate in Hz.
          */
-        float sampleRate() const;
+        std::int32_t sampleRate() const;
 
         /**
          * @brief Returns the number of channels in the buffer.
          * @return Number of channels.
          */
-        std::size_t channels() const;
+        std::int8_t channels() const;
 
         /**
          * @brief Returns the number of samples per buffer
@@ -73,7 +73,7 @@ namespace score {
          * @param channels Number of channels in the audio buffer.
          * @param frames_per_channel Number of samples per buffer.
          */
-        void resize(std::size_t channels, std::size_t frames_per_channel);
+        void resize(std::int8_t channels, std::size_t frames_per_channel);
 
         /**
          * @brief Updates the audio buffer by merging the different sub-bands
@@ -110,7 +110,7 @@ namespace score {
          * @param frames_per_channel Number of samples per buffer.
          * @param raw Array of raw data holding the audio samples.
          */
-        void updateRaw(std::size_t channels, std::size_t frames_per_channel, const int16_t* raw);
+        void updateRaw(std::int8_t channels, std::size_t frames_per_channel, const int16_t* raw);
 
         /**
          * @brief Returns a mono signal generated from the low band of each channel in fixed point.
@@ -285,9 +285,9 @@ namespace score {
         void mixed_helper_f(Bands band_index);
 
     private:
-        float sample_rate_{};
+        std::int32_t sample_rate_{};
         double timestamp_{};
-        std::size_t channels_{};
+        std::int8_t channels_{};
         std::size_t frames_per_buffer_{};
         Matrix<std::int16_t> fixed_data_{};
         Matrix<float> floating_data_{};

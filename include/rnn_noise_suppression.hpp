@@ -17,7 +17,7 @@ namespace score {
          * @param channels Number of channels.
          * @throws std::bad_alloc in case of a memory allocation error.
          */
-        explicit DeepNoiseSuppression(std::size_t channels);
+        explicit DeepNoiseSuppression(std::int8_t channels);
 
         /**
          * @brief Default destructor.

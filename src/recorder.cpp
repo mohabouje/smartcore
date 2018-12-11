@@ -6,7 +6,7 @@ using namespace score;
 
 struct Recorder::Pimpl {
 
-    Pimpl(float sample_rate, std::size_t channels, int device_index, std::size_t frames_per_buffer) :
+    Pimpl(std::int32_t sample_rate, std::int8_t channels, int device_index, std::size_t frames_per_buffer) :
         device_index_(device_index),
         channels_(channels),
         frames_per_buffer_(static_cast<size_t>(frames_per_buffer ? frames_per_buffer : sample_rate / 100)),
@@ -98,7 +98,7 @@ struct Recorder::Pimpl {
         return paContinue;
     }
 
-    bool isSampleRateSupported(float sample_rate) {
+    bool isSampleRateSupported(std::int32_t sample_rate) {
         PaStreamParameters output_params;
         output_params.channelCount = 2;
         output_params.device = Pa_GetDefaultOutputDevice();
@@ -108,7 +108,7 @@ struct Recorder::Pimpl {
         return static_cast<bool>(Pa_IsFormatSupported(&input_params_, &output_params, sample_rate));
     }
 
-    void setSampleRate(float sample_rate) {
+    void setSampleRate(std::int32_t sample_rate) {
         if (!isSampleRateSupported(sample_rate)) {
             throw std::invalid_argument("Sample rate not supported.");
         }
@@ -146,9 +146,9 @@ struct Recorder::Pimpl {
     PaStreamParameters      input_params_{};
     PaDeviceIndex device_index_;
 
-    std::size_t channels_;
+    std::int8_t channels_;
     std::size_t frames_per_buffer_;
-    float sample_rate_;
+    std::int32_t sample_rate_;
 
 
     AudioBuffer record_buffer_;
@@ -158,17 +158,17 @@ struct Recorder::Pimpl {
 
 };
 
-Recorder::Recorder(float sample_rate, std::size_t channels,  int device_index, std::size_t frames_per_buffer) :
+Recorder::Recorder(std::int32_t sample_rate, std::int8_t channels,  int device_index, std::size_t frames_per_buffer) :
     pimpl_(std::make_unique<Pimpl>(sample_rate, channels, device_index, frames_per_buffer)) {
 
 }
 
-Recorder::Recorder(float sample_rate, std::size_t channels) :
+Recorder::Recorder(std::int32_t sample_rate, std::int8_t channels) :
         Recorder(sample_rate, channels, DefaultInputDevice()){
 
 }
 
-Recorder::Recorder(std::size_t channels) :
+Recorder::Recorder(std::int8_t channels) :
         Recorder(static_cast<float>(Pa_GetDeviceInfo(Pa_GetDefaultInputDevice())->defaultSampleRate), channels, DefaultInputDevice()){
 
 }
@@ -211,7 +211,7 @@ float Recorder::sampleRate() const {
     return pimpl_->sample_rate_;
 }
 
-void Recorder::setSampleRate(float sample_rate) {
+void Recorder::setSampleRate(std::int32_t sample_rate) {
     pimpl_->setSampleRate(sample_rate);
 }
 

@@ -3,6 +3,7 @@
 
 #include <audio_buffer.hpp>
 #include <memory>
+#include <vector>
 
 namespace score {
 
@@ -25,7 +26,7 @@ namespace score {
          * @param input_rate Input sampling rate in Hz.
          * @param output_rate Output sampling rate in Hz.
          */
-        ReSampler(std::uint32_t channels, std::uint32_t input_rate, std::uint32_t output_rate, Quality quality);
+        ReSampler(std::uint8_t channels, std::uint32_t input_rate, std::uint32_t output_rate, Quality quality);
 
         /**
          * @brief Default destructor

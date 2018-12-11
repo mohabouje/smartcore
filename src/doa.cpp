@@ -9,7 +9,7 @@
 using namespace score;
 struct DOA::Pimpl {
 
-    Pimpl(float sample_rate, float microphone_distances = 0.08127, float sound_speed = 343.2f) :
+    Pimpl(std::int32_t sample_rate, float microphone_distances = 0.08127, float sound_speed = 343.2f) :
             maximum_tau_(microphone_distances / sound_speed),
             sample_rate_(sample_rate),
             microphone_distances_(microphone_distances),
@@ -117,7 +117,7 @@ struct DOA::Pimpl {
     std::vector<std::pair<std::size_t, std::size_t>> microphone_groups_{};
     std::size_t fft_size_{0};
     float maximum_tau_{};
-    float sample_rate_{};
+    std::int32_t sample_rate_{};
     float microphone_distances_{};
     float sound_speed_{};
     fftwf_plan signal_plan_{nullptr};
@@ -125,7 +125,7 @@ struct DOA::Pimpl {
     fftwf_plan gcc_plan_{nullptr};
 };
 
-DOA::DOA(float sample_rate, float microphone_distances, float sound_speed) :
+DOA::DOA(std::int32_t sample_rate, float microphone_distances, float sound_speed) :
     pimpl_(std::make_unique<Pimpl>(sample_rate, microphone_distances, sound_speed)){
 
 }
@@ -150,7 +150,7 @@ float DOA::process(const AudioBuffer &microphone_inputs) {
     return pimpl_->process(microphone_inputs);
 }
 
-void DOA::setSampleRate(float sample_rate) {
+void DOA::setSampleRate(std::int32_t sample_rate) {
     pimpl_->sample_rate_ = sample_rate;
 }
 

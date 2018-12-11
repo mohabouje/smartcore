@@ -66,7 +66,7 @@ struct VAD::Pimpl {
 
     Fvad* processor_{nullptr};
     VAD::Mode mode_{VAD::Mode::Quality};
-    float sample_rate_;
+    std::int32_t sample_rate_;
 };
 
 VAD::VAD(std::int32_t sampleRate) : pimpl_(std::make_unique<Pimpl>(sampleRate))  {

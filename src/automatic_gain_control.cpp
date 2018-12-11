@@ -8,7 +8,7 @@ using namespace score;
 struct AGC::Pimpl {
 
 
-    Pimpl(float sample_rate, std::size_t channels, AGC::Mode mode) {
+    Pimpl(std::int32_t sample_rate, std::int8_t channels, AGC::Mode mode) {
         processor_ = webrtc::AudioProcessing::Create(std::rand());
         if (processor_ == nullptr) {
             throw std::bad_alloc();
@@ -174,7 +174,7 @@ AGC::Mode score::AGC::mode() const {
     return pimpl_->mode_;
 }
 
-AGC::AGC(float sample_rate, std::size_t channels, AGC::Mode mode) :
+AGC::AGC(std::int32_t sample_rate, std::int8_t channels, AGC::Mode mode) :
     pimpl_(std::make_unique<Pimpl>(sample_rate, channels, mode)) {
 
 }

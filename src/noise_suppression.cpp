@@ -9,7 +9,7 @@
 using namespace score;
 
 struct Handler {
-    explicit Handler(float sample_rate) : handle_(WebRtcNs_Create()) {
+    explicit Handler(std::int32_t sample_rate) : handle_(WebRtcNs_Create()) {
         if (handle_ == nullptr) {
             throw std::bad_alloc();
         } else {
@@ -35,7 +35,7 @@ private:
 struct NoiseSuppression::Pimpl {
 
 
-    Pimpl(float sample_rate, std::size_t channels, Policy policy) :
+    Pimpl(std::int32_t sample_rate, std::int8_t channels, Policy policy) :
         channels_(channels),
         sample_rate_(sample_rate),
         estimated_noise_(WebRtcNs_num_freq(), 0),
@@ -130,8 +130,8 @@ struct NoiseSuppression::Pimpl {
 
 private:
     Policy policy_;
-    float sample_rate_{};
-    std::size_t channels_{};
+    std::int32_t sample_rate_{};
+    std::int8_t channels_{};
     std::size_t expected_frames_{};
     std::vector<float> estimated_noise_;
     std::array<const float*, Bands::NumberBands> input_bands_;
@@ -139,7 +139,7 @@ private:
     std::vector<std::unique_ptr<Handler>> handlers_{};
 };
 
-NoiseSuppression::NoiseSuppression(float sample_rate, std::size_t channels, Policy policy)
+NoiseSuppression::NoiseSuppression(std::int32_t sample_rate, std::int8_t channels, Policy policy)
 : pimpl_(std::make_unique<Pimpl>(sample_rate, channels, policy)) {}
 
 NoiseSuppression::~NoiseSuppression() = default;

@@ -5,7 +5,7 @@ using namespace score;
 
 struct ReSampler::Pimpl {
 
-    Pimpl(std::uint32_t channels, std::uint32_t input_rate, std::uint32_t output_rate, Quality quality) :
+    Pimpl(std::uint8_t channels, std::uint32_t input_rate, std::uint32_t output_rate, Quality quality) :
             channels_(channels),
             input_rate_(input_rate),
             output_rate_(output_rate),
@@ -67,13 +67,13 @@ struct ReSampler::Pimpl {
     SpeexResamplerState* state_{nullptr};
     std::uint32_t input_rate_;
     std::uint32_t output_rate_;
-    std::uint32_t channels_{0};
+    std::uint8_t channels_{0};
     int error_{0};
     int quality_{};
     float ratio_{1};
 };
 
-ReSampler::ReSampler(std::uint32_t channels, std::uint32_t input_rate, std::uint32_t output_rate, Quality quality) :
+ReSampler::ReSampler(std::uint8_t channels, std::uint32_t input_rate, std::uint32_t output_rate, Quality quality) :
     pimpl_(std::make_unique<Pimpl>(channels, input_rate, output_rate, quality)) {
 
 }

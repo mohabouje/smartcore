@@ -15,7 +15,7 @@ namespace score {
          * @param channels Number of channels
          * @param frames_per_buffer Number of samples to process at one time (should correspond to 10-20 ms)
          */
-        ResidualEchoSuppression(float sample_rate, std::size_t channels, std::size_t frames_per_buffer);
+        ResidualEchoSuppression(std::int32_t sample_rate, std::int8_t channels, std::size_t frames_per_buffer);
 
         /**
          * @brief Default destructor

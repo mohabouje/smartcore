@@ -26,7 +26,7 @@ namespace score {
          * @note Supported sample rates: 8KHz or 16KHz.
          * @throws std::bad_alloc in case of a memory allocation error.
          */
-        NoiseSuppression(float sample_rate, std::size_t channels, Policy policy);
+        NoiseSuppression(std::int32_t sample_rate, std::int8_t channels, Policy policy);
 
         /**
          * @brief Default destructor.

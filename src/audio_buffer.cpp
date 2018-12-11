@@ -12,21 +12,21 @@ AudioBuffer::AudioBuffer() {
 
 }
 
-AudioBuffer::AudioBuffer(float sample_rate) : sample_rate_(sample_rate) {
+AudioBuffer::AudioBuffer(std::int32_t sample_rate) : sample_rate_(sample_rate) {
 
 }
 
-AudioBuffer::AudioBuffer(float sample_rate, std::size_t channels, std::size_t frames_per_channel) :
+AudioBuffer::AudioBuffer(std::int32_t sample_rate, std::int8_t channels, std::size_t frames_per_channel) :
     AudioBuffer(sample_rate) {
     resize(channels, frames_per_channel);
 }
 
-AudioBuffer::AudioBuffer(float sample_rate, std::size_t channels, std::size_t frames_per_channel, const int16_t *raw) :
+AudioBuffer::AudioBuffer(std::int32_t sample_rate, std::int8_t channels, std::size_t frames_per_channel, const int16_t *raw) :
     AudioBuffer(sample_rate, channels, frames_per_channel) {
     updateRaw(channels, frames_per_channel, raw);
 }
 
-void AudioBuffer::updateRaw(std::size_t channels, std::size_t frames_per_channel, const int16_t *raw) {
+void AudioBuffer::updateRaw(std::int8_t channels, std::size_t frames_per_channel, const int16_t *raw) {
     resize(channels, frames_per_channel);
 
     for (auto i = 0ul; i < channels; ++i) {
@@ -43,7 +43,7 @@ void AudioBuffer::updateRaw(std::size_t channels, std::size_t frames_per_channel
 
 
 
-void score::AudioBuffer::resize(std::size_t channels, std::size_t frames_per_channel) {
+void score::AudioBuffer::resize(std::int8_t channels, std::size_t frames_per_channel) {
     channels_ = channels;
     frames_per_buffer_ = frames_per_channel;
     raw_data_.resize(channels * frames_per_channel);
@@ -174,7 +174,7 @@ void AudioBuffer::merge() {
     }
 }
 
-float AudioBuffer::sampleRate() const {
+std::int32_t AudioBuffer::sampleRate() const {
     return sample_rate_;
 }
 
@@ -183,7 +183,7 @@ std::size_t AudioBuffer::framesPerChannel() const {
     return frames_per_buffer_;
 }
 
-std::size_t AudioBuffer::channels() const {
+std::int8_t AudioBuffer::channels() const {
     return channels_;
 }
 
@@ -331,7 +331,7 @@ std::size_t AudioBuffer::size() const {
     return channels_ * frames_per_buffer_;
 }
 
-void AudioBuffer::setSampleRate(float sample_rate) {
+void AudioBuffer::setSampleRate(std::int32_t sample_rate) {
     sample_rate_ = sample_rate;
 }
 

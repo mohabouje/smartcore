@@ -27,14 +27,14 @@ namespace score {
          * @brief Initialize a recorder in the default input device and with the default sample rate.
          * @param channels Number of channels of input signal.
          */
-        explicit Recorder(std::size_t channels);
+        explicit Recorder(std::int8_t channels);
 
         /**
          * @brief Initializes a recorder in the default input device with the given configuration.
          * @param sample_rate Sampling rate in Hz.
          * @param channels Number of channels of input signal.
          */
-        Recorder(float sample_rate, std::size_t channels);
+        Recorder(std::int32_t sample_rate, std::int8_t channels);
 
         /**
          * @brief Initializes a recorder with the given configuration
@@ -43,7 +43,7 @@ namespace score {
          * @param device_index Device Index
          * @param frames_per_buffer Number of frames per buffer.
          */
-        Recorder(float sample_rate, std::size_t channels,
+        Recorder(std::int32_t sample_rate, std::int8_t channels,
                 int device_index = DefaultInputDevice(), std::size_t frames_per_buffer = 0);
 
         /**
@@ -86,7 +86,7 @@ namespace score {
          * @brief Sets the streaming sample rate.
          * @param sample_rate The sample rate in Hz.
          */
-        void setSampleRate(float sample_rate);
+        void setSampleRate(std::int32_t sample_rate);
 
         /**
          * @brief Returns the number of frames per buffer.

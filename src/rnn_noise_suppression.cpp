@@ -27,7 +27,7 @@ private:
 
 
 struct DeepNoiseSuppression::Pimpl {
-    explicit Pimpl(std::size_t channels) :
+    explicit Pimpl(std::int8_t channels) :
         channels_(channels),
         handlers_(channels) {
         for (auto& smart_pointer : handlers_) {
@@ -66,14 +66,14 @@ struct DeepNoiseSuppression::Pimpl {
     }
 
 private:
-    std::size_t channels_;
+    std::int8_t channels_;
     std::vector<std::unique_ptr<Handler>> handlers_;
 };
 
 const float DeepNoiseSuppression::DefaultSampleRate = 48000.0f;
 const std::size_t DeepNoiseSuppression::DefaultBufferSize = 480;
 
-DeepNoiseSuppression::DeepNoiseSuppression(std::size_t channels) : pimpl_(std::make_unique<Pimpl>(channels)){}
+DeepNoiseSuppression::DeepNoiseSuppression(std::int8_t channels) : pimpl_(std::make_unique<Pimpl>(channels)){}
 
 DeepNoiseSuppression::~DeepNoiseSuppression() = default;
 
