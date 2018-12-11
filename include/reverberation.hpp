@@ -91,7 +91,7 @@ namespace score {
         float height() const;
 
         /**
-         * @brief Returns the reverberation time (T60) in seconds.
+         * @brief Returns the reverberation time (T60).
          * @return Reverberation (T60) time in seconds.
          */
         float reverberationTime() const;
@@ -104,7 +104,8 @@ namespace score {
 
         /**
          * @brief Sets the reflection coefficients of the room.
-         * @note Expected format: [beta_x1 beta_x2 beta_y1 beta_y2 beta_z1 beta_z2]
+         * @note Expected format: [\f$beta_x1 beta_x2 beta_y1 beta_y2 beta_z1 beta_z2\f$] where each beta is
+         * the reflection coefficient of each wall.
          */
         void setReflectionCoefficients(const Vector<float>& coefficients);
 
@@ -146,7 +147,6 @@ namespace score {
          * @return A matrix representing the RIR in each receiver.
          */
         const Matrix<double>& RIR() const;
-
 
         /**
          * @brief Adds the effect of the impulse response to input buffer and stored in the output buffer
