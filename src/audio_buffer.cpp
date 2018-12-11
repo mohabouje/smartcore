@@ -332,4 +332,8 @@ void AudioBuffer::setTimestamp(double timestamp) {
     timestamp_ = timestamp;
 }
 
+std::size_t AudioBuffer::size() const {
+    return channels_ * frames_;
+}
+
 

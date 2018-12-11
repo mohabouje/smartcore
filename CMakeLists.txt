@@ -23,6 +23,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         rnnoise
         webrtc-noise
         webrtc-dsp
+        webrtc_audio_processing
         fftw3f
         portaudio
         speexdsp)

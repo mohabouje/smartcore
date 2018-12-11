@@ -87,6 +87,12 @@ namespace score {
         void setTimestamp(double timestamp);
 
         /**
+         * @brief Returns the size of the underlying raw data.
+         * @brief Size of the internal buffer.
+         */
+        std::size_t size() const;
+
+        /**
          * @brief Updates the internal raw data and invalidates all the existing data.
          * @param channels Number of channels in the audio buffer.
          * @param frames_per_channel Number of samples per buffer.
