@@ -73,7 +73,7 @@ struct ResidualEchoSuppression::Pimpl {
         }
 
         if (input.framesPerChannel() != frame_size_) {
-            throw std::invalid_argument("The AEC is configure to work with " + std::to_string(frame_size_)
+            throw std::invalid_argument("The ResidualEchoSuppression is configure to work with " + std::to_string(frame_size_)
                                         + " frames per buffer.");
         }
 

@@ -178,6 +178,10 @@ std::int32_t AudioBuffer::sampleRate() const {
     return sample_rate_;
 }
 
+std::size_t AudioBuffer::framesPerBand() const {
+    start_fixed_operation(true);
+    return fixed_bands_.front().cols();
+}
 
 std::size_t AudioBuffer::framesPerChannel() const {
     return frames_per_buffer_;
@@ -333,5 +337,9 @@ std::size_t AudioBuffer::size() const {
 
 void AudioBuffer::setSampleRate(std::int32_t sample_rate) {
     sample_rate_ = sample_rate;
+}
+
+float AudioBuffer::duration() const {
+    return static_cast<float>(frames_per_buffer_) / sample_rate_;
 }
 

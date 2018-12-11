@@ -38,7 +38,13 @@ set(DSP_FILES
         common_audio/signal_processing/spl_sqrt.c
         common_audio/signal_processing/splitting_filter.c
         common_audio/signal_processing/sqrt_of_one_minus_x_squared.c
-        common_audio/signal_processing/vector_scaling_operations.c)
+        common_audio/signal_processing/vector_scaling_operations.c
+        common_audio/signal_processing/dot_product_with_scale.h
+        common_audio/signal_processing/dot_product_with_scale.cc
+        common_audio/third_party/fft4g/fft4g.h
+        common_audio/third_party/fft4g/fft4g.c
+        common_audio/third_party/spl_sqrt_floor/spl_sqrt_floor.c
+        common_audio/third_party/spl_sqrt_floor/spl_sqrt_floor.h)
 
 add_library(webrtc-dsp SHARED ${DSP_FILES})
 target_include_directories(webrtc-dsp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -58,11 +64,15 @@ set(NS_FILES
         modules/audio_processing/ns/defines.h
         modules/audio_processing/ns/noise_suppression.h
         modules/audio_processing/ns/noise_suppression.c
+        modules/audio_processing/ns/noise_suppression_x.h
+        modules/audio_processing/ns/noise_suppression_x.c
         modules/audio_processing/ns/ns_core.h
         modules/audio_processing/ns/ns_core.c
+        modules/audio_processing/ns/nsx_core_c.c
+        modules/audio_processing/ns/nsx_core.h
+        modules/audio_processing/ns/nsx_core.c
+        modules/audio_processing/ns/nsx_defines.h
         modules/audio_processing/ns/windows_private.h
-        common_audio/third_party/fft4g/fft4g.h
-        common_audio/third_party/fft4g/fft4g.c
         rtc_base/checks.h
         rtc_base/checks.cc)
 
@@ -70,10 +80,33 @@ add_library(webrtc-noise SHARED ${NS_FILES})
 target_include_directories(webrtc-noise PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(webrtc-noise PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/modules/audio_processing/ns/)
 target_compile_definitions(webrtc-noise PRIVATE -D__native_client__)
+target_link_libraries(webrtc-noise PRIVATE webrtc-dsp)
 set_target_properties(webrtc-noise PROPERTIES PUBLIC_HEADER modules/audio_processing/ns/noise_suppression.h)
 
 include(GNUInstallDirs)
 install(TARGETS webrtc-noise
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/smartmeet/core/")
+
+
+
+set(NS_FILES
+        modules/audio_processing/agc/legacy/gain_control.h
+        modules/audio_processing/agc/legacy/digital_agc.h
+        modules/audio_processing/agc/legacy/digital_agc.c
+        modules/audio_processing/agc/legacy/analog_agc.h
+        modules/audio_processing/agc/legacy/analog_agc.c)
+
+add_library(webrtc-agc SHARED ${NS_FILES})
+target_include_directories(webrtc-agc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(webrtc-agc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/modules/audio_processing/agc/legacy/)
+target_compile_definitions(webrtc-agc PRIVATE -D__native_client__)
+target_link_libraries(webrtc-agc PRIVATE webrtc-dsp)
+set_target_properties(webrtc-agc PROPERTIES PUBLIC_HEADER modules/audio_processing/agc/legacy/gain_control.h)
+
+include(GNUInstallDirs)
+install(TARGETS webrtc-agc
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/smartmeet/core/")

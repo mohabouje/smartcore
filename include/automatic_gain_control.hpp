@@ -46,8 +46,11 @@ namespace score {
          * @param sample_rate Sampling rate in Hz.
          * @param channels Number of channels.
          * @param mode Operational mode.
+         * @param minimum_capture_level Minimum value of an analog sample.
+         * @param maximum_capture_level Maximum value of an analog sample.
          */
-        AGC(std::int32_t sample_rate, std::int8_t channels, Mode = Mode::AdaptiveDigital);
+        AGC(std::int32_t sample_rate, std::int8_t channels, Mode = Mode::AdaptiveDigital,
+                int minimum_capture_level = 0, int maximum_capture_level = 255);
 
         /**
          * @brief Default destructor.
@@ -83,11 +86,18 @@ namespace score {
         /**
          * Sets the |minimum| and |maximum| analog levels of the audio capture device.
          * @note Must be set if and only if an analog mode is used.
-         * @note Limited to [0, ].
+         * @note Limited to [0, 65535].
          * @param min Minimum value of an analog sample.
          * @param max Maximum value of an analog sample.
          */
         void setAnalogLevelRange(int min, int max);
+
+        /**
+         * @brief Set the analog level
+         * @note This function should be called before processing in Analog mode.
+         * @param level Level of the analog target
+         */
+        void setAnalogLevel(int level);
 
         /**
          * @brief Returns the minimum and maximum analog levels of the audio capture device

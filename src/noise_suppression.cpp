@@ -104,21 +104,26 @@ struct NoiseSuppression::Pimpl {
             throw std::invalid_argument("Expected an input frame at " + std::to_string(sample_rate_) + " Hz.");
         }
 
-        if (input.framesPerChannel() != expected_frames_) {
+        if (input.framesPerBand() != expected_frames_) {
             throw std::invalid_argument("Expected an input frame with "
-            + std::to_string(expected_frames_) + " samples per buffer");
+            + std::to_string(expected_frames_) + " samples per band");
+        }
+
+        if (input.framesPerBand() > 160)  {
+            throw std::invalid_argument("Expected a maximum of 160 samples per band");
         }
 
         output.setSampleRate(sample_rate_);
-        output.resize(input.channels(), input.framesPerChannel());
+        output.updateRaw(input.channels(), input.framesPerChannel(), input.raw());
         for (auto i = 0ul; i < channels_; ++i) {
 
-            input_bands_[Band0To8kHz] = input.band_f(i, Band0To8kHz);
-            input_bands_[Band8To16kHz] = input.band_f(i, Band8To16kHz);
+            input_bands_[Band0To8kHz] = output.band_f(i, Band0To8kHz);
+            input_bands_[Band8To16kHz] = output.band_f(i, Band8To16kHz);
 
             output_bands_[Band0To8kHz] = output.band_f(i, Band0To8kHz);
             output_bands_[Band8To16kHz] = output.band_f(i, Band8To16kHz);
 
+            // TODO check the fixed implementation
             WebRtcNs_Analyze(handlers_[i]->core(), input_bands_[Band0To8kHz]);
             WebRtcNs_Process(handlers_[i]->core(), &input_bands_.front(),
                     Bands::NumberBands, &output_bands_.front());

@@ -68,6 +68,18 @@ namespace score {
          */
         size_t numberBands() const;
 
+        /*
+         * @brief Returns the number of samples per band
+         * @return NUmber of samples per band
+         */
+        size_t framesPerBand() const;
+
+        /**
+         * @brief Returns the duration of the frame
+         * @return Duration of the frame in msecs.
+         */
+        float duration() const;
+
         /**
          * @brief Resizes the internal buffer
          * @param channels Number of channels in the audio buffer.

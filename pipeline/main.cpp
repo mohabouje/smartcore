@@ -41,15 +41,16 @@ int main() {
         std::cout << "Recording stopped" << std::endl;
     });
 
-    AudioBuffer output(sample_rate, channels, frame_per_buffer);
-    AudioBuffer resampled(DeepNoiseSuppression::DefaultSampleRate, channels, DeepNoiseSuppression::DefaultBufferSize);
+    AudioBuffer output;
+    AudioBuffer resampled;
+    AudioBuffer resampled_output;
     recorder->setOnProcessingBufferReady([&](AudioBuffer& recorded) {
         denoiser->process(recorded, output);
         reverb->process(output, output);
 
         upsampler->process(output, resampled);
-        rnn_denoiser->process(resampled, resampled);
-        downsampler->process(resampled, output);
+        rnn_denoiser->process(resampled, resampled_output);
+        downsampler->process(resampled_output, output);
     });
     recorder->record();
 

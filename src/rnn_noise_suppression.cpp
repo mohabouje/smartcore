@@ -57,6 +57,10 @@ struct DeepNoiseSuppression::Pimpl {
             throw std::invalid_argument("Invalid length. Expected 480 samples and 48KHz as sample rate.");
         }
 
+        if (&input == &output) {
+            throw std::invalid_argument("The input buffer and output buffer could not be the same");
+        }
+
         output.setSampleRate(DefaultSampleRate);
         output.resize(input.channels(), input.framesPerChannel());
         for (auto i = 0ul; i < channels_; ++i) {

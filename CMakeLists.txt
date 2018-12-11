@@ -13,6 +13,7 @@ add_subdirectory(pipeline)
 
 find_package( Eigen3 REQUIRED )
 include_directories(${EIGEN3_INCLUDE_DIR})
+include_directories(/usr/include/webrtc_audio_processing/)
 
 file(GLOB library_src
         "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
@@ -26,9 +27,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         rnnoise
         webrtc-noise
         webrtc-dsp
-        webrtc_audio_processing
+        webrtc-agc
         portaudio
         speexdsp)
+target_compile_options(${PROJECT_NAME} PRIVATE -DWEBRTC_POSIX)
 
 include(GNUInstallDirs)
 install(TARGETS ${PROJECT_NAME}

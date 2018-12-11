@@ -1,42 +1,101 @@
 #include "automatic_gain_control.hpp"
-#include <webrtc_audio_processing/audio_processing.h>
-#include <webrtc_audio_processing/module_common_types.h>
 #include <unordered_map>
+#include <gain_control.h>
+#include <automatic_gain_control.hpp>
+
 
 using namespace score;
+
+
+struct Handler {
+    Handler() {
+        state_ = WebRtcAgc_Create();
+        if (state_ == nullptr) {
+            throw std::bad_alloc();
+        }
+    }
+
+    ~Handler() {
+        WebRtcAgc_Free(state_);
+    }
+
+    void* state() {
+        return state_;
+    }
+
+    void Initialize(int minimum_capture_level,
+                    int maximum_capture_level,
+                    int mode,
+                    int sample_rate_hz,
+                    int capture_level) {
+        int error = WebRtcAgc_Init(state_, minimum_capture_level, maximum_capture_level, mode, sample_rate_hz);
+        if (error != 0) {
+            throw std::runtime_error("Error while initializing the AGC block");
+        }
+        setCaptureLevel(capture_level);
+    }
+
+    void reset() {
+    }
+
+    void setConfiguration(WebRtcAgcConfig& config) {
+        const auto error = WebRtcAgc_set_config(state_, config);
+        if (error != 0) {
+            throw std::runtime_error("Error while configuring the AGC block");
+        }
+    }
+
+    void setCaptureLevel(int capture_level) {
+        capture_level_ = capture_level;
+    }
+
+    int captureLevel() {
+        return capture_level_;
+    }
+
+private:
+    void* state_;
+    int capture_level_;
+};
+
 
 struct AGC::Pimpl {
 
 
-    Pimpl(std::int32_t sample_rate, std::int8_t channels, AGC::Mode mode) {
-        processor_ = webrtc::AudioProcessing::Create(std::rand());
-        if (processor_ == nullptr) {
-            throw std::bad_alloc();
-        }
-
-        processor_->set_num_channels(static_cast<int>(channels), static_cast<int>(channels));
-        processor_->set_sample_rate_hz(static_cast<int>(sample_rate));
-        processor_->echo_control_mobile()->Enable(false);
-        processor_->echo_cancellation()->Enable(false);
-        processor_->voice_detection()->Enable(false);
-        processor_->level_estimator()->Enable(false);
-        processor_->noise_suppression()->Enable(false);
-        processor_->high_pass_filter()->Enable(false);
-        processor_->gain_control()->Enable(true);
+    Pimpl(std::int32_t sample_rate, std::int8_t channels, AGC::Mode mode, int minimum_capture_level, int maximum_capture_level) :
+        channels_(channels),
+        sample_rate_(sample_rate),
+        handlers_(static_cast<unsigned long>(channels), Handler()),
+        mode_(mode),
+        minimum_(minimum_capture_level),
+        maximum_(maximum_capture_level) {
 
         setMode(mode);
-        setTargetLevelDBFS(30);
-        setCompressionGain(0);
-        setAnalogLevelRange(0, 100);
-        enableLimiter(false);
+        setAnalogLevelRange(minimum_capture_level, maximum_capture_level);
+        enableLimiter(true);
+        setTargetLevelDBFS(3);
+        setCompressionGain(9);
     }
 
-    ~Pimpl() {
-        webrtc::AudioProcessing::Destroy(processor_);
+    void reset() {
+        config_ = WebRtcAgcConfig();
+        for (auto& h : handlers_) {
+            const auto previous = h.captureLevel();
+            h = Handler();
+            h.Initialize(minimum_, maximum_, Equivalent.find(mode_)->second, sample_rate_, previous);
+            WebRtcAgc_set_config(h.state(), config_);
+        }
+    }
+
+    void configure() {
+        for (auto& h : handlers_) {
+            WebRtcAgc_set_config(h.state(), config_);
+        }
     }
 
     void enableLimiter(bool state) {
-        processor_->gain_control()->enable_limiter(state);
+        config_.limiterEnable = static_cast<uint8_t>(state);
+        configure();
     }
 
     void setAnalogLevelRange(int min, int max) {
@@ -55,8 +114,9 @@ struct AGC::Pimpl {
         if (mode_ != Mode::AdaptiveAnalog) {
             return;
         }
-
-        processor_->gain_control()->set_analog_level_limits(min, max);
+        minimum_ = min;
+        maximum_ = max;
+        reset();
     }
 
     void setCompressionGain(int gain_db) {
@@ -67,13 +127,13 @@ struct AGC::Pimpl {
         if (mode_ != Mode::AdaptiveAnalog) {
             return;
         }
-
-        processor_->gain_control()->set_compression_gain_db(gain_db);
+        config_.compressionGaindB = gain_db;
+        configure();
     }
 
     void setMode(AGC::Mode mode) {
         mode_ = mode;
-        processor_->gain_control()->set_mode(Equivalent.find(mode)->second);
+        reset();
     }
 
     void setTargetLevelDBFS(int level_dbfs) {
@@ -84,48 +144,129 @@ struct AGC::Pimpl {
         if (level_dbfs < 0) {
             throw std::invalid_argument("The level DBFS must be a positive value in the range [0, 31]");
         }
-        processor_->gain_control()->set_target_level_dbfs(-level_dbfs);
+        config_.targetLevelDbfs = level_dbfs;
+        configure();
     }
 
     bool isSignalSaturated() const {
-        return processor_->gain_control()->stream_is_saturated();
+        return static_cast<bool>(stream_is_saturated_);
     }
 
+    void setAnalogLevel(int level) {
+        if (level < minimum_ || level > maximum_) {
+            throw std::invalid_argument("Expected a level in the range " + std::to_string(minimum_)
+            + ", " + std::to_string(maximum_));
+        }
+
+        analog_capture_level_ = level;
+        was_analog_level_set_ = true;
+    }
 
     void process(const AudioBuffer& input, AudioBuffer& output) {
-        if (input.channels() != processor_->num_input_channels()) {
+        if (input.channels() != channels_) {
             throw std::invalid_argument("Expected an input frame with "
-                                        + std::to_string(processor_->num_input_channels()) + " channels.");
+                                        + std::to_string(channels_) + " channels.");
         }
 
-        if (input.sampleRate() != processor_->sample_rate_hz()) {
+        if (input.sampleRate() != sample_rate_) {
             throw std::invalid_argument("Expected an input frame at "
-                                        + std::to_string(processor_->sample_rate_hz()) + " Hz.");
+                                        + std::to_string(sample_rate_) + " Hz.");
         }
 
-        frame_.UpdateFrame(0,
-                          static_cast<const WebRtc_UWord32>(input.timestamp()),
-                          input.raw(),
-                          static_cast<const WebRtc_UWord16>(input.size()),
-                          static_cast<const int>(input.sampleRate()),
-                          webrtc::AudioFrame::SpeechType::kNormalSpeech,
-                          webrtc::AudioFrame::VADActivity::kVadUnknown,
-                          static_cast<const WebRtc_UWord8>(input.framesPerChannel()));
-        processor_->ProcessStream(&frame_);
-        output.setSampleRate(processor_->sample_rate_hz());
-        output.updateRaw(input.channels(), input.framesPerChannel(), frame_._payloadData);
-    }
+        if (mode_ == Mode::AdaptiveAnalog && !was_analog_level_set_) {
+            throw std::runtime_error("Analog level required");
+        }
 
-    webrtc::AudioProcessing* processor_{nullptr};
-    webrtc::AudioFrame frame_;
+        if (input.duration() != 0.01) {
+            throw std::invalid_argument("Expected a frame of 10 msecs");
+        }
+
+        if (input.framesPerBand() > 160)  {
+            throw std::invalid_argument("Expected a maximum of 160 samples per band");
+        }
+
+        output.setSampleRate(sample_rate_);
+        output.updateRaw(input.channels(), input.framesPerChannel(), input.raw());
+        switch (mode_) {
+            case Mode::AdaptiveAnalog:
+                for (auto i = 0ul; i < channels_; ++i) {
+                    output_bands_[Band0To8kHz] = output.band(i, Band0To8kHz);
+                    output_bands_[Band8To16kHz] = output.band(i, Band8To16kHz);
+                    const auto error = WebRtcAgc_AddMic(handlers_[i].state(), &output_bands_.front(),
+                            input.numberBands(), input.framesPerChannel());
+                    handlers_[i].setCaptureLevel(analog_capture_level_);
+                    if (error != 0) {
+                        throw std::runtime_error("Unexpected error");
+                    }
+                }
+                break;
+            case Mode::AdaptiveDigital:
+                for (auto i = 0ul; i < channels_; ++i) {
+                    output_bands_[Band0To8kHz] = output.band(i, Band0To8kHz);
+                    output_bands_[Band8To16kHz] = output.band(i, Band8To16kHz);
+                    auto digital_capture_level = 0;
+                    const auto error = WebRtcAgc_VirtualMic(handlers_[i].state(), &output_bands_.front(),
+                                                        input.numberBands(), input.framesPerChannel(),
+                                                        analog_capture_level_, &digital_capture_level);
+                    handlers_[i].setCaptureLevel(digital_capture_level);
+                    if (error != 0) {
+                        throw std::runtime_error("Unexpected error");
+                    }
+                }
+                break;
+            case Mode::FixedDigital:
+                break;
+        }
+
+        for (auto i = 0ul; i < channels_; ++i) {
+            output_bands_[Band0To8kHz] = output.band(i, Band0To8kHz);
+            output_bands_[Band8To16kHz] = output.band(i, Band8To16kHz);
+            const_bands_[Band0To8kHz] = output.band(i, Band0To8kHz);
+            const_bands_[Band8To16kHz] = output.band(i, Band8To16kHz);
+            auto capture_level = 0, stream_has_echo = 0;
+            const auto error = WebRtcAgc_Process(handlers_[i].state(), &const_bands_.front(),
+                                                    input.numberBands(), input.framesPerChannel(),
+                                                    &output_bands_.front(), handlers_[i].captureLevel(),
+                                                    &capture_level, stream_has_echo, &stream_is_saturated_);
+            if (error != 0) {
+                throw std::runtime_error("Unexpected error");
+            }
+
+            handlers_[i].setCaptureLevel(capture_level);
+        }
+
+        if (mode_ == Mode::AdaptiveAnalog) {
+            analog_capture_level_ = 0;
+            for (auto i = 0ul; i < channels_; ++i) {
+                analog_capture_level_ += handlers_[i].captureLevel();
+            }
+            analog_capture_level_ /= handlers_.size();
+        }
+
+        was_analog_level_set_ = false;
+     }
+
+
+    std::int8_t channels_{};
+    int sample_rate_{0};
+    int minimum_{0};
+    int maximum_{100};
+    int analog_capture_level_{0};
+    bool was_analog_level_set_{false};
+    std::uint8_t stream_is_saturated_{0};
+    WebRtcAgcConfig config_{};
+    Vector<Handler> handlers_{};
     AGC::Mode mode_{AGC::FixedDigital};
-    static const std::unordered_map<AGC::Mode, webrtc::GainControl::Mode> Equivalent;
+    std::array<std::int16_t *, Bands::NumberBands> output_bands_;
+    std::array<std::int16_t *, Bands::NumberBands> const_bands_;
+
+    static const std::unordered_map<AGC::Mode, int> Equivalent;
 };
 
-const std::unordered_map<AGC::Mode, webrtc::GainControl::Mode> AGC::Pimpl::Equivalent = {
-        {AGC::Mode::AdaptiveAnalog, webrtc::GainControl::kAdaptiveAnalog},
-        {AGC::Mode::AdaptiveDigital, webrtc::GainControl::kAdaptiveDigital},
-        {AGC::Mode::FixedDigital, webrtc::GainControl::kFixedDigital}
+const std::unordered_map<AGC::Mode, int> AGC::Pimpl::Equivalent = {
+        {AGC::Mode::AdaptiveAnalog, kAgcModeAdaptiveAnalog},
+        {AGC::Mode::AdaptiveDigital, kAgcModeAdaptiveDigital},
+        {AGC::Mode::FixedDigital, kAgcModeFixedDigital}
 };
 
 
@@ -154,29 +295,32 @@ bool AGC::isSignalSaturated() const {
 }
 
 int AGC::compressionGain() const {
-    return pimpl_->processor_->gain_control()->compression_gain_db();
+    return pimpl_->config_.compressionGaindB;
 }
 
 bool AGC::isLimiterEnabled() const {
-    return pimpl_->processor_->gain_control()->is_limiter_enabled();
+    return pimpl_->config_.limiterEnable;
 }
 
 std::pair<int, int> AGC::analogLevelRange() const {
-    return {pimpl_->processor_->gain_control()->analog_level_minimum(),
-            pimpl_->processor_->gain_control()->analog_level_maximum()};
+    return {pimpl_->minimum_, pimpl_->maximum_};
 }
 
 int AGC::targetLevel() const {
-    return pimpl_->processor_->gain_control()->target_level_dbfs();
+    return pimpl_->config_.targetLevelDbfs;
 }
 
 AGC::Mode score::AGC::mode() const {
     return pimpl_->mode_;
 }
 
-AGC::AGC(std::int32_t sample_rate, std::int8_t channels, AGC::Mode mode) :
-    pimpl_(std::make_unique<Pimpl>(sample_rate, channels, mode)) {
+AGC::AGC(std::int32_t sample_rate, std::int8_t channels, AGC::Mode mode, int minimum_capture_level, int maximum_capture_level) :
+    pimpl_(std::make_unique<Pimpl>(sample_rate, channels, mode, minimum_capture_level, maximum_capture_level)) {
 
+}
+
+void score::AGC::setAnalogLevel(int level) {
+    pimpl_->setAnalogLevel(level);
 }
 
 AGC::~AGC() = default;
