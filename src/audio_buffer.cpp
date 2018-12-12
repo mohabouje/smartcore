@@ -1,4 +1,6 @@
 
+#include <audio_buffer.hpp>
+
 #include "audio_buffer.hpp"
 
 using namespace score;
@@ -66,11 +68,8 @@ std::int8_t AudioBuffer::channels() const {
     return channels_;
 }
 
-const std::int16_t *AudioBuffer::raw() const {
-    return interleaved_data_.data();
-}
 
-std::int16_t *AudioBuffer::raw() {
+std::int16_t *AudioBuffer::interleave() {
     return interleaved_data_.data();
 }
 
@@ -92,5 +91,14 @@ void AudioBuffer::setSampleRate(std::int32_t sample_rate) {
 
 size_t AudioBuffer::duration() const {
     return static_cast<std::size_t >(1e3 * frames_per_buffer_ / sample_rate_);
+}
+
+const std::int16_t* AudioBuffer::interleave() const {
+    for (auto i = 0ul, index = 0ul; i < size(); ++i) {
+        for (auto j = 0ul; j < channels(); ++j, ++index) {
+            interleaved_data_[index] = deinterleaved_data_(j, i);
+        }
+    }
+    return interleaved_data_.data();
 }
 

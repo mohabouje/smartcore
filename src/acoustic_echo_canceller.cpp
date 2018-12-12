@@ -70,7 +70,7 @@ struct AEC::Pimpl {
 
         output.setSampleRate(sample_rate);
         output.resize(recorded.channels(), recorded.framesPerChannel());
-        speex_echo_cancellation(state_, recorded.raw(), played.raw(), output.raw());
+        speex_echo_cancellation(state_, recorded.interleave(), played.interleave(), output.interleave());
     }
 
 private:

@@ -37,7 +37,7 @@ struct ReSampler::Pimpl {
 
         auto input_size = static_cast<uint32_t>(input.framesPerChannel() * input.channels()),
             output_size = static_cast<uint32_t>(output.framesPerChannel() * output.channels());
-        error_ = speex_resampler_process_interleaved_int(state_, input.raw(), &input_size, output.raw(), &output_size);
+        error_ = speex_resampler_process_interleaved_int(state_, input.interleave(), &input_size, output.interleave(), &output_size);
         ensure_no_error();
     }
 

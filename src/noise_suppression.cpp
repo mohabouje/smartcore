@@ -54,13 +54,10 @@ struct NoiseSuppression::Pimpl {
 
     void resize() {
         const auto expected_frames = static_cast<std::size_t>(ExpectedDuration * sample_rate_);
-        bands_fixed_.resize(Bands::NumberBands, expected_frames);
-        input_bands_.resize(Bands::NumberBands, expected_frames);
-        output_bands_.resize(Bands::NumberBands, expected_frames);
-        for (auto i = 0ul; i < Bands::NumberBands; ++i) {
-            input_bands_ptr_[i] = input_bands_.row(i).data();
-            output_bands_ptr_[i] = output_bands_.row(i).data();
-        }
+        input_data_.resize(expected_frames);
+        output_data_.resize(expected_frames);
+        input_bands_ptr_[0] = input_data_.data();
+        output_bands_ptr_[0] = output_data_.data();
     }
     
 
@@ -97,7 +94,7 @@ struct NoiseSuppression::Pimpl {
     float speechProbability() {
         auto probability = 0.0f;
         for (auto i = 0; i < channels_; ++i) {
-            probability  += WebRtcNs_prior_speech_probability(handlers_[i]->core());
+            probability += WebRtcNs_prior_speech_probability(handlers_[i]->core());
         }
 
         if (channels_) {
@@ -106,19 +103,6 @@ struct NoiseSuppression::Pimpl {
 
         return probability;
     }
-
-    void toFloat() {
-        for (auto i = 0ul; i < Bands::NumberBands; ++i) {
-            Converter::S16ToFloatS16(bands_fixed_.row(i).data(), bands_fixed_.cols(), input_bands_ptr_[i]);
-        }
-    }
-
-    void fromFloat() {
-        for (auto i = 0ul; i < Bands::NumberBands; ++i) {
-            Converter::FloatS16ToS16(input_bands_ptr_[i], bands_fixed_.cols(), bands_fixed_.row(i).data());
-        }
-    }
-
 
     void process(const AudioBuffer &input,
                  AudioBuffer &output) {
@@ -142,15 +126,12 @@ struct NoiseSuppression::Pimpl {
         output.setSampleRate(sample_rate_);
         output.resize(input.channels(), input.framesPerChannel());
         for (auto i = 0ul; i < channels_; ++i) {
-            band_extractor_.process(input.channel(i), input.framesPerChannel(), bands_fixed_);
-            toFloat();
+            Converter::S16ToFloatS16(input.channel(i), input.framesPerChannel(), input_bands_ptr_[0]);
             {
-                WebRtcNs_Analyze(handlers_[i]->core(), input_bands_ptr_[Band0To8kHz]);
-                WebRtcNs_Process(handlers_[i]->core(), &input_bands_ptr_.front(),
-                                 Bands::NumberBands, &output_bands_ptr_.front());
+                WebRtcNs_Analyze(handlers_[i]->core(), input_data_.data());
+                WebRtcNs_Process(handlers_[i]->core(), &input_bands_ptr_[0], 1, &output_bands_ptr_[0]);
             }
-            fromFloat();
-            band_extractor_.synthesis(bands_fixed_, output.channel(i));
+            Converter::FloatS16ToS16(input_bands_ptr_[0], output.framesPerChannel(), output.channel(i));
         }
     }
 
@@ -162,11 +143,10 @@ private:
     std::int8_t channels_{};
     std::vector<float> estimated_noise_;
     std::vector<std::unique_ptr<Handler>> handlers_{};
-    Matrix<std::int16_t> bands_fixed_{};
-    Matrix<float> input_bands_{};
-    Matrix<float> output_bands_{};
-    std::array<float*, Bands::NumberBands> input_bands_ptr_;
-    std::array<float*, Bands::NumberBands> output_bands_ptr_;
+    std::vector<float> input_data_;
+    std::vector<float> output_data_;
+    std::array<float*, 1> input_bands_ptr_;
+    std::array<float*, 1> output_bands_ptr_;
     BandExtractor band_extractor_{};
     
 };

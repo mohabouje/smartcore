@@ -22,7 +22,7 @@ struct Encoder::Pimpl {
     }
 
     void process(const AudioBuffer& buffer) {
-        const auto samples = sf_write_short(file_, buffer.raw(), buffer.size());
+        const auto samples = sf_write_short(file_, buffer.interleave(), buffer.size());
         if (samples != buffer.size()) {
             throw std::runtime_error("Error while encoding buffer. Encoded samples: " + std::to_string(samples)
             + "/" + std::to_string(buffer.size()));

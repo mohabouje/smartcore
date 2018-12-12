@@ -77,7 +77,7 @@ struct DeReverberation::Pimpl {
         }
 
         output.setSampleRate(sample_rate_);
-        output.updateRaw(input.channels(), input.framesPerChannel(), input.raw());
+        output.updateRaw(input.channels(), input.framesPerChannel(), input.interleave());
         for (auto i = 0ul; i < channels_; ++i) {
             speex_preprocess_run(handlers_[i].state_, output.channel(i));
         }
