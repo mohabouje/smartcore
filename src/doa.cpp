@@ -1,4 +1,5 @@
 #include "doa.hpp"
+#include "utils.hpp"
 
 #include <eigen3/unsupported/Eigen/FFT>
 #include <complex>
@@ -24,7 +25,7 @@ struct DOA::Pimpl {
 
     }
 
-    float gccPhat(const float* signal, const float* reference, size_t size) {
+    float gccPhat(const std::int16_t* signal, const std::int16_t* reference, size_t size) {
         const auto expected_size = 2 * size;
         if (expected_size != fft_size_) {
             reset();
@@ -36,18 +37,17 @@ struct DOA::Pimpl {
             gcc_.resize(expected_size);
         }
 
-        std::copy(signal, signal + size, signal_.data());
+        Converter::S16ToFloat(signal, size, signal_.data());
+        Converter::S16ToFloat(reference, size, reference_.data());
+
+
         fft_.fwd(signal_spectrum_, signal_);
-
-        std::copy(reference, reference + size, reference_.data());
         fft_.fwd(reference_spectrum_ , reference_);
-
         std::transform(signal_spectrum_.begin(), signal_spectrum_.end(),
-                reference_spectrum_.begin(), signal_spectrum_.begin(), [](const auto& signal, const auto& reference) {
-            const auto operation = signal * std::conj(reference);
+                reference_spectrum_.begin(), signal_spectrum_.begin(), [](const auto& s, const auto& r) {
+            const auto operation = s * std::conj(r);
             return operation / std::abs(operation);
         });
-
         fft_.inv(gcc_, signal_spectrum_);
 
         const auto maximum_tau_index = static_cast<std::size_t >(sample_rate_ * maximum_tau_);
@@ -62,16 +62,7 @@ struct DOA::Pimpl {
     }
 
 
-    float process(const AudioBuffer& microphone_inputs) {
-
-        for (auto i = 0ul, size = tau_.size(); i < size; ++i) {
-            const auto group = microphone_groups_[i];
-            tau_[i] = gccPhat(microphone_inputs.channel_f(group.first),
-                    microphone_inputs.channel_f(group.second),
-                    microphone_inputs.framesPerChannel());
-            theta_[i] = static_cast<int>(std::asin(tau_[i] / maximum_tau_) * 180.0f / M_PI);
-        }
-
+    float computeDOA() {
         const auto min_index = std::distance(tau_.begin(), std::min_element(tau_.begin(), tau_.end()));
         auto best_guess = 0;
         if ((min_index != 0 and theta_[min_index - 1] >= 0) or (min_index == 0 and theta_.back() < 0)) {
@@ -81,6 +72,18 @@ struct DOA::Pimpl {
         }
 
         return (best_guess + 120 + min_index * 60) % 360;
+    }
+
+    float process(const AudioBuffer& microphone_inputs) {
+        for (auto i = 0ul, size = tau_.size(); i < size; ++i) {
+            const auto group = microphone_groups_[i];
+            tau_[i] = gccPhat(microphone_inputs.channel(group.first),
+                    microphone_inputs.channel(group.second),
+                    microphone_inputs.framesPerChannel());
+            theta_[i] = static_cast<int>(std::asin(tau_[i] / maximum_tau_) * 180.0f / M_PI);
+        }
+
+        return computeDOA();
     }
 
     void setGroupMicrophones(const std::vector<std::pair<std::size_t, std::size_t>>& microphone_groups) {

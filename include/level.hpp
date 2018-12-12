@@ -1,9 +1,8 @@
 #ifndef SMARTCORE_LEVEL_ESTIMATOR_HPP
 #define SMARTCORE_LEVEL_ESTIMATOR_HPP
 
-
-#include <utility>
-#include "audio_buffer.hpp"
+#include <audio_buffer.hpp>
+#include <memory>
 
 namespace score {
 

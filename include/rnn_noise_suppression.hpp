@@ -2,15 +2,12 @@
 #define RNN_NOISE_SUPPRESSION_H
 
 #include <audio_buffer.hpp>
-#include <vector>
+#include <memory>
 
 namespace score {
 
     class DeepNoiseSuppression {
     public:
-
-        static const float DefaultSampleRate;
-        static const std::size_t DefaultBufferSize;
 
         /**
          * @brief Creates and initializes a Noise Suppression filter.

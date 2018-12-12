@@ -7,6 +7,15 @@
 
 namespace score {
 
+    /**
+    * The Bands enum represent the different available bands in each channel.
+    */
+    enum Bands : unsigned int {
+        Band0To8kHz = 0,
+        Band8To16kHz,
+        NumberBands
+    };
+
     template <typename T>
     using Matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 

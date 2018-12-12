@@ -6,9 +6,11 @@
 using namespace score;
 
 struct VAD::Pimpl {
-    explicit Pimpl(std::int32_t sampleRate) :
+    explicit Pimpl(std::int32_t sampleRate, Mode mode) :
         sample_rate_(sampleRate),
-        processor_(fvad_new()) {
+        processor_(fvad_new()),
+        mode_(mode)
+    {
 
         if (processor_ == nullptr) {
             throw std::bad_alloc();
@@ -35,20 +37,26 @@ struct VAD::Pimpl {
         return static_cast<int>(sample_rate_);
     }
 
+
     bool process(const AudioBuffer &input) {
-        static auto valid_frame_lengths = SupportedFrameLength();
+
+        if (input.channels() != 1) {
+            throw std::runtime_error("Expected a mono (single channel) input frame.");
+        }
+
+
         if (input.sampleRate() != sample_rate_) {
             throw std::invalid_argument("Invalid sample rate. Supported sample rate: "
                                         + std::to_string(sample_rate_) + " Hz.");
         }
 
-        const auto frame_length = static_cast<std::size_t >(input.framesPerChannel() / sample_rate_);
-        const auto iter = std::find(valid_frame_lengths.begin(), valid_frame_lengths.end(), frame_length);
-        if (iter == valid_frame_lengths.end()) {
-            throw std::invalid_argument("Invalid frame legnth");
+        static auto valid_frame_lengths = SupportedFrameDuration();
+        if (std::find(valid_frame_lengths.begin(), valid_frame_lengths.end(), input.duration())
+            == valid_frame_lengths.end()) {
+            throw std::invalid_argument("Invalid frame legnth. See SupportedFrameDuration for details.");
         }
 
-        const auto result = fvad_process(processor_, input.downmix(), input.framesPerChannel());
+        const auto result = fvad_process(processor_, input.channel(0), input.framesPerChannel());
         if (result == -1) {
             throw std::runtime_error("Unexpected error");
         }
@@ -69,7 +77,7 @@ struct VAD::Pimpl {
     std::int32_t sample_rate_;
 };
 
-VAD::VAD(std::int32_t sampleRate) : pimpl_(std::make_unique<Pimpl>(sampleRate))  {
+VAD::VAD(std::int32_t sampleRate, Mode mode) : pimpl_(std::make_unique<Pimpl>(sampleRate, mode))  {
 
 }
 
@@ -77,7 +85,7 @@ std::vector<std::int32_t> VAD::SupportedSampleRates() {
     return {8000, 16000, 32000, 48000};
 }
 
-std::vector<std::int32_t> VAD::SupportedFrameLength() {
+std::vector<std::int32_t> VAD::SupportedFrameDuration() {
     return {10, 20, 30 };
 }
 

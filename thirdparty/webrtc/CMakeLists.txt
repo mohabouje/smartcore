@@ -44,11 +44,14 @@ set(DSP_FILES
         common_audio/third_party/fft4g/fft4g.h
         common_audio/third_party/fft4g/fft4g.c
         common_audio/third_party/spl_sqrt_floor/spl_sqrt_floor.c
-        common_audio/third_party/spl_sqrt_floor/spl_sqrt_floor.h)
+        common_audio/third_party/spl_sqrt_floor/spl_sqrt_floor.h
+        common_audio/include/audio_util.h
+        common_audio/audio_util.cc)
 
 add_library(webrtc-dsp SHARED ${DSP_FILES})
 target_include_directories(webrtc-dsp PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(webrtc-dsp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/modules/audio_processing/)
+target_include_directories(webrtc-dsp PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/common_audio/include/)
 target_compile_definitions(webrtc-dsp PRIVATE -DWEBRTC_POSIX)
 set_target_properties(webrtc-dsp PROPERTIES PUBLIC_HEADER
         common_audio/signal_processing/include/signal_processing_library.h)
@@ -90,15 +93,14 @@ install(TARGETS webrtc-noise
         PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/smartmeet/core/")
 
 
-
-set(NS_FILES
+set(AGC_FILES
         modules/audio_processing/agc/legacy/gain_control.h
         modules/audio_processing/agc/legacy/digital_agc.h
         modules/audio_processing/agc/legacy/digital_agc.c
         modules/audio_processing/agc/legacy/analog_agc.h
         modules/audio_processing/agc/legacy/analog_agc.c)
 
-add_library(webrtc-agc SHARED ${NS_FILES})
+add_library(webrtc-agc SHARED ${AGC_FILES})
 target_include_directories(webrtc-agc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(webrtc-agc PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/modules/audio_processing/agc/legacy/)
 target_compile_definitions(webrtc-agc PRIVATE -D__native_client__)

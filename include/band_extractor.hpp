@@ -7,15 +7,6 @@
 
 namespace score {
 
-    /**
- * The Bands enum represent the different available bands in each channel.
- */
-    enum Bands {
-        Band0To8kHz = 0,
-        Band8To16kHz,
-        NumberBands
-    };
-
     class BandExtractor {
     public:
 

@@ -8,9 +8,7 @@ using namespace score;
 
 
 void BandExtractor::process(const std::int16_t* input, std::size_t input_size, Matrix<int16_t >& output) {
-
-    const auto number_frames = input_size;
-    output.resize(NumberBands, number_frames);
+    output.resize(NumberBands, input_size);
     WebRtcSpl_AnalysisQMF(input, input_size,
                           output.row(Band0To8kHz).data(),
                           output.row(Band8To16kHz).data(),

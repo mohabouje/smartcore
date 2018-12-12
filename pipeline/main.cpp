@@ -1,9 +1,8 @@
 #include <recorder.hpp>
-#include <acoustic_echo_canceller.hpp>
+#include <vad.hpp>
+#include <low_cut_filter.hpp>
 #include <noise_suppression.hpp>
-#include <rnn_noise_suppression.hpp>
-#include <resample.hpp>
-#include <reverberation.hpp>
+#include <downmix.hpp>
 
 #include <iostream>
 #include <chrono>
@@ -15,24 +14,15 @@ int main() {
 
     const auto sample_rate = 16000;
     const auto device_index = Recorder::DefaultInputDevice();
-    const auto channels = 1;
+    const auto channels = 2;
     const auto frame_per_buffer = static_cast<std::size_t >(0.01 * sample_rate);
 
 
-    auto recorder = std::make_unique<Recorder>(sample_rate,channels,
-            device_index, frame_per_buffer);
-    auto denoiser = std::make_unique<NoiseSuppression>(sample_rate, channels, NoiseSuppression::Medium);
-    auto rnn_denoiser = std::make_unique<DeepNoiseSuppression>(channels);
-
-    auto upsampler = std::make_unique<ReSampler>(channels, sample_rate,
-            DeepNoiseSuppression::DefaultSampleRate, ReSampler::Quality::HighQuality);
-
-    auto downsampler = std::make_unique<ReSampler>(channels, DeepNoiseSuppression::DefaultSampleRate,
-            sample_rate, ReSampler::Quality::HighQuality);
-
-    auto reverb = std::make_unique<Reverberation>(sample_rate, channels);
-    reverb->setSource({0, 0, 0});
-    reverb->setReceivers({{0, 0, 0}});
+    auto recorder = std::make_unique<Recorder>(sample_rate, channels, device_index, frame_per_buffer);
+    auto vad = std::make_unique<VAD>(sample_rate, VAD::Aggressive);
+    auto low_cut = std::make_unique<LowCutFilter>(sample_rate, channels);
+    auto denoiser = std::make_unique<NoiseSuppression>(sample_rate, channels, NoiseSuppression::Aggressive);
+    auto downmix = std::make_unique<DownMix>(Bands::Band0To8kHz);
 
     recorder->setOnRecordingStarted([](){
         std::cout << "Recording started" << std::endl;
@@ -42,20 +32,14 @@ int main() {
     });
 
     AudioBuffer output;
-    AudioBuffer resampled;
-    AudioBuffer resampled_output;
     recorder->setOnProcessingBufferReady([&](AudioBuffer& recorded) {
-        denoiser->process(recorded, output);
-        reverb->process(output, output);
-
-        upsampler->process(output, resampled);
-        rnn_denoiser->process(resampled, resampled_output);
-        downsampler->process(resampled_output, output);
+        low_cut->process(recorded, recorded);
+        denoiser->process(recorded, recorded);
+        downmix->process(recorded, output);
+        std::cout << "Is there any voice ? " << vad->process(output) << std::endl;
     });
     recorder->record();
 
-    while (true) {
-
-    }
+    while (true) {}
     return 0;
 }

@@ -21,9 +21,11 @@ namespace score {
 
         /**
          * @brief Creates and initializes a VAD instance with the given sample rate.
+         * @param sample_rate Sampling rate in Hz.
+         * @param mode Operation mode
          * @throws std::bad_alloc in case of a memory allocation error.
          */
-        explicit VAD(std::int32_t sampleRate = 8000);
+        explicit VAD(std::int32_t sample_rate, Mode mode = Mode::Aggressive);
 
         /**
          * @brief Default destructor.
@@ -40,7 +42,7 @@ namespace score {
          * @brief Returns an array with all the supported frame length in msecs.
          * @return An array storing all the supported frame length in msecs.
          */
-        static std::vector<std::int32_t> SupportedFrameLength();
+        static std::vector<std::int32_t> SupportedFrameDuration();
 
         /**
          * @brief Sets the input sample rate in Hz for a VAD instance.

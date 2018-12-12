@@ -1,5 +1,5 @@
 #include "reverberation.hpp"
-#include <eigen3/unsupported/Eigen/FFT>
+#include "utils.hpp"
 
 using namespace score;
 
@@ -10,6 +10,7 @@ using namespace score;
 #include <cstdlib>
 #include <iostream>
 #include <complex>
+#include <eigen3/unsupported/Eigen/FFT>
 
 #define ROUND(x) ((x)>=0?(long)((x)+0.5):(long)((x)-0.5))
 
@@ -361,7 +362,7 @@ struct Reverberation::Pimpl {
         }
 
         const auto fft_size = input.framesPerChannel();
-        signal_input_.resize(fft_size, 0);
+        temporal_buffer_.resize(fft_size, 0);
         room_input_.resize(fft_size, 0);
         signal_fft_.resize(fft_size);
         room_fft_.resize(fft_size);
@@ -369,18 +370,21 @@ struct Reverberation::Pimpl {
         output.setSampleRate(input.sampleRate());
         output.resize(input.channels(), input.framesPerChannel());
         for (auto i = 0ul; i < receivers_count_; ++i) {
-            const auto* signal = input.channel_f(i);
-            std::copy(signal, signal + input.framesPerChannel(), signal_input_.data());
-            fft_.fwd(signal_fft_, signal_input_);
 
-            const auto* room = rir_.row(i).data();
-            std::copy(room, room + rir_.cols(), room_input_.data());
-            fft_.fwd(room_fft_, room_input_);
+            Converter::S16ToFloat(input.channel(i), input.framesPerChannel(), temporal_buffer_.data());
+            {
+                fft_.fwd(signal_fft_, temporal_buffer_);
 
-            std::transform(room_fft_.begin(), room_fft_.end(),
-                           signal_fft_.begin(), signal_fft_.begin(), std::multiplies<>());
+                const auto* room = rir_.row(i).data();
+                std::copy(room, room + rir_.cols(), room_input_.data());
 
-            fft_.inv(output.channel_f(i), signal_fft_.data(), fft_size);
+                fft_.fwd(room_fft_, room_input_);
+                std::transform(room_fft_.begin(), room_fft_.end(),
+                               signal_fft_.begin(), signal_fft_.begin(), std::multiplies<>());
+
+                fft_.inv(temporal_buffer_.data(), signal_fft_.data(), fft_size);
+            }
+            Converter::FloatToS16(temporal_buffer_.data(), output.framesPerChannel(), output.channel(i));
         }
     }
 
@@ -404,7 +408,7 @@ struct Reverberation::Pimpl {
 
 private:
     // FFT configuration
-    Vector<float> signal_input_;
+    Vector<float> temporal_buffer_;
     Vector<float> room_input_;
     Vector<std::complex<float> > signal_fft_;
     Vector<std::complex<float> > room_fft_;

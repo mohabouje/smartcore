@@ -1,8 +1,7 @@
 #include "rnn_noise_suppression.hpp"
+#include "utils.hpp"
 
 #include <rnnoise.h>
-#include "rnn_noise_suppression.hpp"
-
 
 using namespace score;
 
@@ -27,6 +26,10 @@ private:
 
 
 struct DeepNoiseSuppression::Pimpl {
+
+    static constexpr std::int32_t DefaultSampleRate = 48000;
+    static constexpr std::size_t DefaultBufferSize = 480;
+
     explicit Pimpl(std::int8_t channels) :
         channels_(channels),
         handlers_(channels) {
@@ -64,7 +67,11 @@ struct DeepNoiseSuppression::Pimpl {
         output.setSampleRate(DefaultSampleRate);
         output.resize(input.channels(), input.framesPerChannel());
         for (auto i = 0ul; i < channels_; ++i) {
-            rnnoise_process_frame(handlers_[i]->core(), output.channel_f(i), input.channel_f(i));
+            Converter::S16ToFloat(input.channel(i), DefaultBufferSize, input_.data());
+            {
+                rnnoise_process_frame(handlers_[i]->core(), output_.data(), input_.data());
+            }
+            Converter::FloatToS16(output_.data(), DefaultBufferSize, output.channel(i));
         }
 
     }
@@ -72,10 +79,11 @@ struct DeepNoiseSuppression::Pimpl {
 private:
     std::int8_t channels_;
     std::vector<std::unique_ptr<Handler>> handlers_;
+    std::array<float, DefaultBufferSize> input_;
+    std::array<float, DefaultBufferSize> output_;
 };
 
-const float DeepNoiseSuppression::DefaultSampleRate = 48000.0f;
-const std::size_t DeepNoiseSuppression::DefaultBufferSize = 480;
+
 
 DeepNoiseSuppression::DeepNoiseSuppression(std::int8_t channels) : pimpl_(std::make_unique<Pimpl>(channels)){}
 

@@ -2,9 +2,9 @@
 
 #include "noise_suppression.hpp"
 #include "band_extractor.hpp"
+#include "utils.hpp"
+
 #include <noise_suppression.h>
-
-
 
 using namespace score;
 
@@ -34,21 +34,35 @@ private:
 
 struct NoiseSuppression::Pimpl {
 
+    static constexpr auto ExpectedDuration = 10;
+    static constexpr auto MaximumAllowedSize = 160;
 
     Pimpl(std::int32_t sample_rate, std::int8_t channels, Policy policy) :
         channels_(channels),
         sample_rate_(sample_rate),
         estimated_noise_(WebRtcNs_num_freq(), 0),
-        handlers_(channels),
-        expected_frames_(static_cast<size_t>(0.01 * sample_rate_))
+        handlers_(channels)
     {
         for (auto& smart_pointer : handlers_) {
             smart_pointer = std::make_unique<Handler>(sample_rate);
         }
         setPolicy(policy);
+        resize();
     }
 
     ~Pimpl() = default;
+
+    void resize() {
+        const auto expected_frames = static_cast<std::size_t>(ExpectedDuration * sample_rate_);
+        bands_fixed_.resize(Bands::NumberBands, expected_frames);
+        input_bands_.resize(Bands::NumberBands, expected_frames);
+        output_bands_.resize(Bands::NumberBands, expected_frames);
+        for (auto i = 0ul; i < Bands::NumberBands; ++i) {
+            input_bands_ptr_[i] = input_bands_.row(i).data();
+            output_bands_ptr_[i] = output_bands_.row(i).data();
+        }
+    }
+    
 
     void setPolicy(NoiseSuppression::Policy policy) {
         const auto p = static_cast<std::underlying_type<NoiseSuppression::Policy>::type>(policy);
@@ -93,6 +107,18 @@ struct NoiseSuppression::Pimpl {
         return probability;
     }
 
+    void toFloat() {
+        for (auto i = 0ul; i < Bands::NumberBands; ++i) {
+            Converter::S16ToFloatS16(bands_fixed_.row(i).data(), bands_fixed_.cols(), input_bands_ptr_[i]);
+        }
+    }
+
+    void fromFloat() {
+        for (auto i = 0ul; i < Bands::NumberBands; ++i) {
+            Converter::FloatS16ToS16(input_bands_ptr_[i], bands_fixed_.cols(), bands_fixed_.row(i).data());
+        }
+    }
+
 
     void process(const AudioBuffer &input,
                  AudioBuffer &output) {
@@ -104,31 +130,28 @@ struct NoiseSuppression::Pimpl {
             throw std::invalid_argument("Expected an input frame at " + std::to_string(sample_rate_) + " Hz.");
         }
 
-        if (input.framesPerBand() != expected_frames_) {
-            throw std::invalid_argument("Expected an input frame with "
-            + std::to_string(expected_frames_) + " samples per band");
+        const auto duration = input.duration();
+        if (input.duration() != ExpectedDuration) {
+            throw std::invalid_argument("Expected a frame of 10 msecs");
         }
 
-        if (input.framesPerBand() > 160)  {
+        if (input.framesPerChannel() > MaximumAllowedSize)  {
             throw std::invalid_argument("Expected a maximum of 160 samples per band");
         }
 
         output.setSampleRate(sample_rate_);
-        output.updateRaw(input.channels(), input.framesPerChannel(), input.raw());
+        output.resize(input.channels(), input.framesPerChannel());
         for (auto i = 0ul; i < channels_; ++i) {
-
-            input_bands_[Band0To8kHz] = output.band_f(i, Band0To8kHz);
-            input_bands_[Band8To16kHz] = output.band_f(i, Band8To16kHz);
-
-            output_bands_[Band0To8kHz] = output.band_f(i, Band0To8kHz);
-            output_bands_[Band8To16kHz] = output.band_f(i, Band8To16kHz);
-
-            // TODO check the fixed implementation
-            WebRtcNs_Analyze(handlers_[i]->core(), input_bands_[Band0To8kHz]);
-            WebRtcNs_Process(handlers_[i]->core(), &input_bands_.front(),
-                    Bands::NumberBands, &output_bands_.front());
+            band_extractor_.process(input.channel(i), input.framesPerChannel(), bands_fixed_);
+            toFloat();
+            {
+                WebRtcNs_Analyze(handlers_[i]->core(), input_bands_ptr_[Band0To8kHz]);
+                WebRtcNs_Process(handlers_[i]->core(), &input_bands_ptr_.front(),
+                                 Bands::NumberBands, &output_bands_ptr_.front());
+            }
+            fromFloat();
+            band_extractor_.synthesis(bands_fixed_, output.channel(i));
         }
-        output.merge();
     }
 
 
@@ -137,11 +160,15 @@ private:
     Policy policy_;
     std::int32_t sample_rate_{};
     std::int8_t channels_{};
-    std::size_t expected_frames_{};
     std::vector<float> estimated_noise_;
-    std::array<const float*, Bands::NumberBands> input_bands_;
-    std::array<float*, Bands::NumberBands> output_bands_;
     std::vector<std::unique_ptr<Handler>> handlers_{};
+    Matrix<std::int16_t> bands_fixed_{};
+    Matrix<float> input_bands_{};
+    Matrix<float> output_bands_{};
+    std::array<float*, Bands::NumberBands> input_bands_ptr_;
+    std::array<float*, Bands::NumberBands> output_bands_ptr_;
+    BandExtractor band_extractor_{};
+    
 };
 
 NoiseSuppression::NoiseSuppression(std::int32_t sample_rate, std::int8_t channels, Policy policy)

@@ -142,6 +142,13 @@ namespace score {
          */
         bool isSignalSaturated() const;
 
+        /**
+         * @brief Applies the AGC block to the audio frame.
+         * @param input Vector storing the input audio samples.
+         * @param output Vector storing the output audio samples.
+         */
+        void process(const AudioBuffer& input, AudioBuffer& output);
+
     private:
         struct Pimpl;
         std::unique_ptr<Pimpl> pimpl_;

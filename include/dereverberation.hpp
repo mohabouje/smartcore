@@ -47,6 +47,14 @@ namespace score {
          */
         void setDecay(int decay);
 
+        /**
+         * @brief Performs a de-reverberation filter in an audio frame.
+         *
+         * @param input Buffer storing the input audio samples.
+         * @param output Buffer storing the output audio samples.
+         */
+        void process(const AudioBuffer& input, AudioBuffer& output);
+
     private:
         struct Pimpl;
         std::unique_ptr<Pimpl> pimpl_;

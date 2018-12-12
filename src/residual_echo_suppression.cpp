@@ -78,17 +78,9 @@ struct ResidualEchoSuppression::Pimpl {
         }
 
         output.setSampleRate(sample_rate_);
-        output.resize(input.channels(), input.framesPerChannel());
+        output.updateRaw(input.channels(), input.framesPerChannel(), input.raw());
         for (auto i = 0ul; i < channels_; ++i) {
-            const auto* in = input.channel(i);
-            auto* out = output.channel(i);
-
-            if (&input != &output) {
-                // TODO: checks if this fix works properly.
-                std::copy(in, in + frame_size_, out);
-            }
-
-            speex_preprocess_run(handlers_[i].state_, out);
+            speex_preprocess_run(handlers_[i].state_, output.channel(i));
         }
     }
 

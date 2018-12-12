@@ -1,6 +1,3 @@
-
-#include <low_cut_filter.hpp>
-
 #include "low_cut_filter.hpp"
 
 using namespace score;

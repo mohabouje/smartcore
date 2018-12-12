@@ -2,7 +2,7 @@
 #define SMARTCORE_ECHO_CANCELLER_HPP
 
 #include <audio_buffer.hpp>
-#include <vector>
+#include <memory>
 
 namespace score {
 
