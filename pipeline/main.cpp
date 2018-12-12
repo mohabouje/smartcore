@@ -3,6 +3,7 @@
 #include <low_cut_filter.hpp>
 #include <noise_suppression.hpp>
 #include <downmix.hpp>
+#include <encoder.hpp>
 
 #include <iostream>
 #include <chrono>
@@ -23,6 +24,7 @@ int main() {
     auto low_cut = std::make_unique<LowCutFilter>(sample_rate, channels);
     auto denoiser = std::make_unique<NoiseSuppression>(sample_rate, channels, NoiseSuppression::Aggressive);
     auto downmix = std::make_unique<DownMix>(Bands::Band0To8kHz);
+    auto encoder = std::make_unique<Encoder>("example.wav", sample_rate, channels);
 
     recorder->setOnRecordingStarted([](){
         std::cout << "Recording started" << std::endl;

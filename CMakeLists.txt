@@ -19,7 +19,7 @@ file(GLOB library_src
         "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
-add_library(${PROJECT_NAME} SHARED ${library_src} include/recorder.hpp src/recorder.cpp)
+add_library(${PROJECT_NAME} SHARED ${library_src})
 target_include_directories(${PROJECT_NAME} PUBLIC include/)
 target_include_directories(${PROJECT_NAME} PRIVATE thirdparty/webrtc/)
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -28,6 +28,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         webrtc-noise
         webrtc-dsp
         webrtc-agc
+        sndfile
         portaudio
         speexdsp)
 target_compile_options(${PROJECT_NAME} PRIVATE -DWEBRTC_POSIX)
