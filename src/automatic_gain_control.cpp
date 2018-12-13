@@ -91,12 +91,12 @@ struct AGC::Pimpl {
                                      "buffer of 10 msecs and a maximum of 160 samples per buffer.");
         }
 
-        input_bands_.resize(Bands::NumberBands, expected_size);
+/*        input_bands_.resize(Bands::NumberBands, expected_size);
         output_bands_.resize(Bands::NumberBands, expected_size);
         for (auto i = 0ul; i < Bands::NumberBands; ++i) {
             input_bands_ptr_[i] = input_bands_.row(i).data();
             output_bands_ptr_[i] = output_bands_.row(i).data();
-        }
+        }*/
     }
 
     void reset() {

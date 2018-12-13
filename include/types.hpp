@@ -17,7 +17,7 @@ namespace score {
     };
 
     template <typename T>
-    using Matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
+    using Matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
     template <typename T>
     using Vector = std::vector<T>;

@@ -10,6 +10,7 @@ add_subdirectory(thirdparty/librnnoise)
 add_subdirectory(thirdparty/libfvad)
 add_subdirectory(thirdparty/webrtc)
 add_subdirectory(pipeline)
+add_subdirectory(test)
 
 find_package( Eigen3 REQUIRED )
 include_directories(${EIGEN3_INCLUDE_DIR})

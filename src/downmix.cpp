@@ -10,11 +10,11 @@ struct DownMix::Pimpl {
     }
 
     void resize(std::size_t frame_length) {
-        bands_.resize(Bands::NumberBands, frame_length);
+/*        bands_.resize(Bands::NumberBands, frame_length);
         for (auto i = 0ul; i < Bands::NumberBands; ++i) {
             bands_ptr_[i] = bands_.row(i).data();
             bands_ptr_[i] = bands_.row(i).data();
-        }
+        }*/
     }
 
     void process(const AudioBuffer &input, AudioBuffer& output) {

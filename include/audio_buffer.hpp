@@ -132,21 +132,13 @@ namespace score {
          */
         const std::int16_t* operator[](std::size_t channel) const;
 
-
-
         /**
          * @brief Returns the interleaved raw data of the input buffer
          * The length of the array is equal to channels * framesPerBuffer
          * @return Vector storing the internal raw data-
          */
-        const std::int16_t* interleave() const;
+        std::int16_t* interleave() const;
 
-        /**
-         * @brief Returns the interleaved raw data of the input buffer
-         * The length of the array is equal to channels * framesPerBuffer
-         * @return Vector storing the internal raw data-
-         */
-        std::int16_t* interleave();
 
     private:
         double timestamp_{};
