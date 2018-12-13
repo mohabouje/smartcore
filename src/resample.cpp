@@ -12,14 +12,8 @@ struct ReSampler::Pimpl {
             ratio_(static_cast<float>(output_rate) / static_cast<float>(input_rate)),
             resampler_(channels, static_cast<edsp::io::resample_quality>(static_cast<std::underlying_type<Quality>::type>(quality)), ratio_)
     {
-
-        quality_ = static_cast<std::underlying_type<Quality >::type>(quality);
-        ensure_no_error();
     }
 
-    ~Pimpl() {
-
-    }
 
     void process(const AudioBuffer& input, AudioBuffer& output) {
 
@@ -38,7 +32,6 @@ struct ReSampler::Pimpl {
         for (auto i = 0; i < input.channels(); ++i) {
             resampler_.process(input.channel(i), input.channel(i) + input.framesPerChannel(), output.channel(i));
         }
-
     }
 
     void reset() {
@@ -49,24 +42,13 @@ struct ReSampler::Pimpl {
         return ratio_;
     }
 
-    void ensure_no_error() {
-        if (resampler_.error() != 0) {
-            throw std::runtime_error("Error while running re-sampling:" + std::string(resampler_.error_string()));
-        }
-    }
-
     int quality() const {
-        return quality_;
+        return resampler_.quality();
     }
-
-
-    std::vector<float> input_;
-    std::vector<float> output_;
 
     std::uint32_t input_rate_;
     std::uint32_t output_rate_;
     std::uint8_t channels_{0};
-    int quality_{};
     float ratio_{1};
     edsp::io::resampler<float> resampler_;
 };

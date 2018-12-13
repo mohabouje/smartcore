@@ -6,6 +6,7 @@
 #include <resample.hpp>
 #include <downmix.hpp>
 #include <encoder.hpp>
+#include <gain.hpp>
 
 #include <iostream>
 #include <chrono>
@@ -15,7 +16,7 @@ int main() {
 
     Recorder::Initialize();
 
-    const auto sample_rate = 8000;
+    const auto sample_rate = 48000;
     const auto device_index = Recorder::DefaultInputDevice();
     const auto channels = 1;
     const auto frame_per_buffer = static_cast<std::size_t >(0.01 * sample_rate);
@@ -30,10 +31,13 @@ int main() {
 
     auto upsampler = std::make_unique<ReSampler>(channels, sample_rate, 48000, ReSampler::Quality::HighQuality);
     auto downsampler = std::make_unique<ReSampler>(channels, 48000, sample_rate, ReSampler::Quality::HighQuality);
+    auto gain = std::make_unique<Gain>(3);
 
     auto e_original = std::make_unique<Encoder>("original.wav", sample_rate, channels);
     auto e_clean_webrtc = std::make_unique<Encoder>("clean_webrtc.wav", sample_rate, channels);
-    auto e_clean_rnn = std::make_unique<Encoder>("clean_rnn.wav", sample_rate, channels);
+    auto e_upsampled = std::make_unique<Encoder>("upsampled_original.wav", 48000, channels);
+    auto e_downsampled = std::make_unique<Encoder>("downsampled_original.wav", sample_rate, channels);
+    auto e_clean_rnn = std::make_unique<Encoder>("clean_rnn.wav", 48000, channels);
 
     recorder->setOnRecordingStarted([](){
         std::cout << "Recording started" << std::endl;
@@ -46,14 +50,8 @@ int main() {
     volatile auto iteration = 1000;
     recorder->setOnProcessingBufferReady([&](AudioBuffer& recorded) {
         e_original->process(recorded);
-        denoiser->process(recorded, output);
-        e_clean_webrtc->process(output);
-
-        //upsampler->process(recorded, upsampled);
-        //rnn_denoiser->process(upsampled, upsampled_clean);
-        //downsampler->process(upsampled_clean, output);
-        //e_clean_rnn->process(upsampled);
-
+        rnn_denoiser->process(recorded, recorded);
+        e_clean_rnn->process(recorded);
         --iteration;
     });
     recorder->record();

@@ -7,7 +7,8 @@ using namespace score;
 
 struct Handler {
 
-    Handler() : processor_(rnnoise_create()) {
+    Handler() {
+        processor_ = rnnoise_create();
         if (processor_ == nullptr) {
             throw std::bad_alloc();
         } else {
@@ -60,20 +61,17 @@ struct DeepNoiseSuppression::Pimpl {
             throw std::invalid_argument("Invalid length. Expected 480 samples and 48KHz as sample rate.");
         }
 
-        if (&input == &output) {
-            throw std::invalid_argument("The input buffer and output buffer could not be the same");
-        }
-
         output.setSampleRate(DefaultSampleRate);
         output.resize(input.channels(), input.framesPerChannel());
         for (auto i = 0ul; i < channels_; ++i) {
-            rnnoise_process_frame(handlers_[i]->core(), output.channel(i), input.channel(i));
+            rnnoise_process_frame(handlers_[i]->core(), tmp_.data(), tmp_.data());
         }
 
     }
 
 private:
     std::int8_t channels_;
+    std::array<float, DefaultBufferSize> tmp_;
     std::vector<std::unique_ptr<Handler>> handlers_;
 };
 

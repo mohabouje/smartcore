@@ -25,7 +25,7 @@ struct Encoder::Pimpl {
         temporal_.resize(buffer.size());
         buffer.toInterleave(temporal_.data());
 
-        const auto samples = sf_write_float(file_, temporal_.data(), buffer.size());
+        const auto samples = sf_write_float(file_, temporal_.data(), temporal_.size());
         if (samples != buffer.size()) {
             throw std::runtime_error("Error while encoding buffer. Encoded samples: " + std::to_string(samples)
             + "/" + std::to_string(buffer.size()));
