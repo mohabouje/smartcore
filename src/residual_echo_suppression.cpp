@@ -77,8 +77,7 @@ struct ResidualEchoSuppression::Pimpl {
                                         + " frames per buffer.");
         }
 
-        output.setSampleRate(sample_rate_);
-        output.updateRaw(input.channels(), input.framesPerChannel(), input.interleave());
+        input.copyTo(output);
         for (auto i = 0ul; i < channels_; ++i) {
             speex_preprocess_run(handlers_[i].state_, output.channel(i));
         }

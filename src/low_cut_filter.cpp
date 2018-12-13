@@ -89,8 +89,7 @@ struct LowCutFilter::Pimpl {
                                         + std::to_string(channels_) + " channels.");
         }
 
-        output.setSampleRate(sample_rate_);
-        output.updateRaw(input.channels(), input.framesPerChannel(), input.interleave());
+        input.copyTo(output);
         for (auto i = 0ul; i < channels_; ++i) {
             filters_[i].Process(output.channel(i), output.framesPerChannel());
         }

@@ -62,7 +62,7 @@ TEST(TestInputAudioFile, UpdateFromRawData) {
     }
 
     AudioBuffer buffer;
-    buffer.updateRaw(Stereo, NumberFrames, temporal.data());
+    buffer.fromInterleave(Stereo, NumberFrames, temporal.data());
 
     EXPECT_EQ(buffer.channels(), Stereo);
     EXPECT_EQ(buffer.framesPerChannel(), NumberFrames);

@@ -92,7 +92,7 @@ struct Recorder::Pimpl {
                      PaStreamCallbackFlags statusFlags) {
 
         auto *ptr = (const std::int16_t *) inputBuffer;
-        record_buffer_.updateRaw(channels_, frames_per_buffer_, ptr);
+        record_buffer_.fromInterleave(channels_, frames_per_buffer_, ptr);
         record_buffer_.setTimestamp(timeInfo->currentTime + timeInfo->inputBufferAdcTime);
         on_buffer_ready_(record_buffer_);
         return paContinue;

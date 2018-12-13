@@ -97,14 +97,6 @@ namespace score {
         std::size_t size() const;
 
         /**
-         * @brief Updates the internal raw data and invalidates all the existing data.
-         * @param channels Number of channels in the audio buffer.
-         * @param frames_per_channel Number of samples per buffer.
-         * @param raw Array of raw data holding the audio samples.
-         */
-        void updateRaw(std::int8_t channels, std::size_t frames_per_channel, const int16_t* raw);
-
-        /**
          * @brief Returns the buffer of the given channel.
          * @param channel Desired channel.
          * @return The channel's buffer.
@@ -139,12 +131,25 @@ namespace score {
          */
         std::int16_t* interleave() const;
 
+        /**
+         * @brief Copy the data of the frame in to another one.
+         * @param buffer Frame where the data must to be copied.
+         */
+        void copyTo(AudioBuffer& buffer) const;
+
+        /**
+         * @brief Updates the internal raw data from a buffer of interleaved samples.
+         * @param channels Number of channels in the audio buffer.
+         * @param frames_per_channel Number of samples per buffer.
+         * @param raw Array of raw data holding the audio samples.
+         */
+        void fromInterleave(std::int8_t channels, std::size_t frames_per_channel, const int16_t *raw);
 
     private:
         double timestamp_{};
         std::int32_t sample_rate_{};
         std::int8_t channels_{};
-        std::size_t frames_per_buffer_{};
+        std::size_t frames_per_channel_{};
         Matrix<std::int16_t> deinterleaved_data_{};
         mutable Vector<std::int16_t> interleaved_data_{};
     };
