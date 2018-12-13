@@ -242,7 +242,7 @@ set(RNN_VAD_FILES
 
 add_library(webrtc-rnn-vad SHARED ${RNN_VAD_FILES})
 target_include_directories(webrtc-rnn-vad PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_include_directories(webrtc-rnn-vad PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/modules/audio_processing/agc2/rnn_vad/)
+target_include_directories(webrtc-rnn-vad PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/modules/audio_processing/agc2/)
 target_include_directories(webrtc-rnn-vad PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/modules/)
 target_compile_definitions(webrtc-rnn-vad PRIVATE -D__native_client__ -DWEBRTC_APM_DEBUG_DUMP=0 -DWEBRTC_POSIX -DWEBRTC_LINUX)
 target_link_libraries(webrtc-rnn-vad PRIVATE webrtc-dsp webrtc-system webrtc-utility webrtc-resample)
