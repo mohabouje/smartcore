@@ -32,10 +32,13 @@ struct ReSampler::Pimpl {
                                      + std::to_string(input_rate_) + " Hz.");
         }
 
-        // TODO: resample the data!
         const auto expected_output_size = static_cast<size_t>(input.framesPerChannel() * ratio_);
         output.setSampleRate(output_rate_);
         output.resize(channels_, expected_output_size);
+        for (auto i = 0; i < input.channels(); ++i) {
+            resampler_.process(input.channel(i), input.channel(i) + input.framesPerChannel(), output.channel(i));
+        }
+
     }
 
     void reset() {

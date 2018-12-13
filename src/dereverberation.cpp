@@ -1,4 +1,5 @@
 #include "dereverberation.hpp"
+#include "utils.hpp"
 #include <speex/speex_preprocess.h>
 
 using namespace score;
@@ -44,7 +45,7 @@ struct DeReverberation::Pimpl {
           std::size_t frame_size) :
             sample_rate_(sample_rate),
             channels_(channels),
-            frame_size_(frame_size),
+            temp_(frame_size),
             handlers_(static_cast<unsigned long>(channels), Handler(sample_rate, frame_size))
 
     {
@@ -67,19 +68,20 @@ struct DeReverberation::Pimpl {
         }
 
         if (channels_ != input.channels()) {
-            throw std::invalid_argument("The ResidualEchoSuppression is configure to work with "
+            throw std::invalid_argument("The DeReverberation is configure to work with "
                                         + std::to_string(channels_) + " channels.");
         }
 
-        if (input.framesPerChannel() != frame_size_) {
-            throw std::invalid_argument("The AEC is configure to work with " + std::to_string(frame_size_)
+        if (input.framesPerChannel() != temp_.size()) {
+            throw std::invalid_argument("The DeReverberation is configure to work with " + std::to_string(temp_.size())
                                         + " frames per buffer.");
         }
 
         input.copyTo(output);
         for (auto i = 0ul; i < channels_; ++i) {
-            // TODO: update this
-            //speex_preprocess_run(handlers_[i].state_, output.channel(i));
+            Converter::FloatS16ToS16(input.channel(i), input.framesPerChannel(), temp_.data());
+            speex_preprocess_run(handlers_[i].state_, temp_.data());
+            Converter::S16ToFloatS16(temp_.data(), output.framesPerChannel(), output.channel(i));
         }
     }
 
@@ -109,8 +111,8 @@ struct DeReverberation::Pimpl {
 
 private:
     std::vector<Handler> handlers_;
+    std::vector<std::int16_t> temp_;
     std::int32_t sample_rate_;
-    std::size_t frame_size_;
     std::int8_t channels_;
 };
 

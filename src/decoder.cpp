@@ -16,17 +16,17 @@ struct Decoder::Pimpl {
     }
 
 
-    void process(AudioBuffer &output) {
+    void process(AudioBuffer &output, std::size_t size) {
         if (output.channels() != decoder_.channels()) {
             throw std::runtime_error("Expected an output buffer of "
                                      + std::to_string(decoder_.channels()) + " channels.");
         }
 
-        interleave_.resize(output.channels() * output.framesPerChannel());
+        interleave_.resize(size);
         decoder_.read(std::begin(interleave_), std::end(interleave_));
 
         output.setSampleRate(decoder_.samplerate());
-        // TODO: copy it to the output buffer.
+        output.fromInterleave(decoder_.channels(), size, interleave_.data());
     }
 
 
@@ -40,8 +40,8 @@ score::Decoder::Decoder(const std::string &file) : pimpl_(std::make_unique<Pimpl
 
 score::Decoder::~Decoder() = default;
 
-void score::Decoder::process(AudioBuffer &output) {
-
+void score::Decoder::process(AudioBuffer &output, std::size_t frames) {
+    pimpl_->process(output, frames);
 }
 
 bool score::Decoder::is_open() {

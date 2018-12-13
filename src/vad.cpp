@@ -1,4 +1,5 @@
-#include "../include/vad.hpp"
+#include "vad.hpp"
+#include "utils.hpp"
 #include <fvad.h>
 #include <array>
 #include <algorithm>
@@ -56,14 +57,12 @@ struct VAD::Pimpl {
             throw std::invalid_argument("Invalid frame legnth. See SupportedFrameDuration for details.");
         }
 
-        /*
-         * TODO: conver to fixed point here
-        const auto result = fvad_process(processor_, input.channel(0), input.framesPerChannel());
+        Converter::FloatS16ToS16(input.channel(0), input.size(), temp_.data());
+        const auto result = fvad_process(processor_, temp_.data(), input.framesPerChannel());
         if (result == -1) {
             throw std::runtime_error("Unexpected error");
         }
-        return (bool) result;*/
-        return true;
+        return (bool) result;
     }
 
     void reset() {
@@ -78,6 +77,9 @@ struct VAD::Pimpl {
     Fvad* processor_{nullptr};
     VAD::Mode mode_{VAD::Mode::Quality};
     std::int32_t sample_rate_;
+
+    static constexpr auto MaximumSize = static_cast<std::size_t>(48000 * 0.03);
+    std::array<std::int16_t, MaximumSize> temp_;
 };
 
 VAD::VAD(std::int32_t sampleRate, Mode mode) : pimpl_(std::make_unique<Pimpl>(sampleRate, mode))  {

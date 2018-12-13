@@ -19,7 +19,6 @@ namespace score {
          */
         ~Decoder();
 
-
         /**
          * @brief Checks if the there is an audio file opened.
          * @return true if an audio file has been opened.
@@ -85,12 +84,12 @@ namespace score {
          */
         std::size_t current() const;
         
-
         /**
          * @brief Decodes the audio in the file and stores it in the Audio Buffer
-         * @param output Buffer storing theaudio samples.
+         * @param output Buffer storing the audio samples.
+         * @param frames Number of frames per channel
          */
-        void process(AudioBuffer& output);
+        void process(AudioBuffer& output, std::size_t frames);
 
     private:
         struct Pimpl;
