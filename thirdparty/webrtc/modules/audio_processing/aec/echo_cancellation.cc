@@ -125,7 +125,6 @@ void* WebRtcAec_Create() {
   if (!aecpc) {
     return NULL;
   }
-  aecpc->data_dumper.reset(new ApmDataDumper(aecpc->instance_count));
 
   aecpc->aec = WebRtcAec_CreateAec(aecpc->instance_count);
   if (!aecpc->aec) {
@@ -169,7 +168,6 @@ void WebRtcAec_Free(void* aecInst) {
 
 int32_t WebRtcAec_Init(void* aecInst, int32_t sampFreq, int32_t scSampFreq) {
   Aec* aecpc = reinterpret_cast<Aec*>(aecInst);
-  aecpc->data_dumper->InitiateNewSetOfRecordings();
   AecConfig aecConfig;
 
   if (sampFreq != 8000 && sampFreq != 16000 && sampFreq != 32000 &&
@@ -354,9 +352,6 @@ int32_t WebRtcAec_Process(void* aecInst,
   }
 
   int far_buf_size_samples = WebRtcAec_system_delay(aecpc->aec);
-  aecpc->data_dumper->DumpRaw("aec_system_delay", 1, &far_buf_size_samples);
-  aecpc->data_dumper->DumpRaw("aec_known_delay", 1, &aecpc->knownDelay);
-
   return retVal;
 }
 
@@ -574,8 +569,6 @@ static int ProcessNormal(Aec* aecInst,
       } else if (aecInst->skew > maxSkewEst) {
         aecInst->skew = maxSkewEst;
       }
-
-      aecInst->data_dumper->DumpRaw("aec_skew", 1, &aecInst->skew);
     }
   }
 

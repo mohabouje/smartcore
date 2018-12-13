@@ -35,8 +35,6 @@ namespace webrtc {
 #define PART_LEN2 (PART_LEN * 2)  // Length of partition * 2
 #define NUM_HIGH_BANDS_MAX 2      // Max number of high bands
 
-class ApmDataDumper;
-
 typedef float complex_t[2];
 // For performance reasons, some arrays of complex numbers are replaced by twice
 // as long arrays of float, all the real parts followed by all the imaginary
@@ -132,7 +130,6 @@ struct AecCore {
   explicit AecCore(int instance_index);
   ~AecCore();
 
-  std::unique_ptr<ApmDataDumper> data_dumper;
   const OouraFft ooura_fft;
 
   CoherenceState coherence_state;

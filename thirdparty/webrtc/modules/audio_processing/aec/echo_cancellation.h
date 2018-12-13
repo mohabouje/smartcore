@@ -61,13 +61,9 @@ typedef struct {
 
 struct AecCore;
 
-class ApmDataDumper;
-
 typedef struct Aec {
   Aec();
   ~Aec();
-
-  std::unique_ptr<ApmDataDumper> data_dumper;
 
   int delayCtr;
   int sampFreq;

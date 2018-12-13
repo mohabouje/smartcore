@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 
-add_subdirectory(thirdparty/librnnoise)
+add_subdirectory(thirdparty/rnnoise)
 add_subdirectory(thirdparty/libfvad)
 add_subdirectory(thirdparty/webrtc)
 add_subdirectory(pipeline)
@@ -30,6 +30,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         webrtc-dsp
         webrtc-agc
         webrtc-aec
+        webrtc-red
+        webrtc-rnn-vad
         sndfile
         portaudio
         speexdsp)

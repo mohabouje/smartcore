@@ -275,8 +275,7 @@ void DivergentFilterFraction::Clear() {
 }
 
 // TODO(minyue): Moving some initialization from WebRtcAec_CreateAec() to ctor.
-AecCore::AecCore(int instance_index)
-    : data_dumper(new ApmDataDumper(instance_index)) {}
+AecCore::AecCore(int instance_index) {}
 
 AecCore::~AecCore() {}
 
@@ -875,7 +874,6 @@ static int SignalBasedDelayCorrection(AecCore* self) {
   // playout audio volume is low (or even muted) the delay estimation can return
   // a very large delay, which will break the AEC if it is applied.
   if (self->frame_count < kDelayCorrectionStart) {
-    self->data_dumper->DumpRaw("aec_da_reported_delay", 1, &last_delay);
     return 0;
   }
 #endif
@@ -892,7 +890,6 @@ static int SignalBasedDelayCorrection(AecCore* self) {
   // 4. Finally, verify that the proposed |delay_correction| is feasible by
   //    comparing with the size of the far-end buffer.
   last_delay = WebRtc_last_delay(self->delay_estimator);
-  self->data_dumper->DumpRaw("aec_da_reported_delay", 1, &last_delay);
   if ((last_delay >= 0) && (last_delay != self->previous_delay) &&
       (WebRtc_last_delay_quality(self->delay_estimator) >
        self->delay_quality_threshold)) {
@@ -937,7 +934,6 @@ static int SignalBasedDelayCorrection(AecCore* self) {
              ? delay_quality
              : self->delay_quality_threshold);
   }
-  self->data_dumper->DumpRaw("aec_da_delay_correction", 1, &delay_correction);
 
   return delay_correction;
 }
@@ -1208,7 +1204,6 @@ static void EchoSuppression(const OouraFft& ooura_fft,
     aec->delayIdx = WebRtcAec_PartitionDelay(aec->num_partitions, aec->wfBuf);
   }
 
-  aec->data_dumper->DumpRaw("aec_nlp_delay", 1, &aec->delayIdx);
 
   // Use delayed far.
   memcpy(xfw, aec->xfwBuf + aec->delayIdx * PART_LEN1,
@@ -1229,7 +1224,6 @@ static void EchoSuppression(const OouraFft& ooura_fft,
 
   FormSuppressionGain(aec, cohde, cohxd, hNl);
 
-  aec->data_dumper->DumpRaw("aec_nlp_gain", PART_LEN1, hNl);
 
   WebRtcAec_Suppress(hNl, efw);
 
@@ -1314,12 +1308,6 @@ static void ProcessNearendBlock(
   const float gInitNoise[2] = {0.999f, 0.001f};
 
   float echo_subtractor_output[PART_LEN];
-
-  aec->data_dumper->DumpWav("aec_far", PART_LEN,
-                            &farend_extended_block_lowest_band[PART_LEN],
-                            std::min(aec->sampFreq, 16000), 1);
-  aec->data_dumper->DumpWav("aec_near", PART_LEN, &nearend_block[0][0],
-                            std::min(aec->sampFreq, 16000), 1);
 
   if (aec->metricsMode == 1) {
     // Update power levels
@@ -1426,13 +1414,6 @@ static void ProcessNearendBlock(
       &aec->extreme_filter_divergence, aec->filter_step_size,
       aec->error_threshold, &farend_fft[0][0], &aec->xfBufBlockPos, aec->xfBuf,
       &nearend_block[0][0], aec->xPow, aec->wfBuf, echo_subtractor_output);
-  aec->data_dumper->DumpRaw("aec_h_fft", PART_LEN1 * aec->num_partitions,
-                            &aec->wfBuf[0][0]);
-  aec->data_dumper->DumpRaw("aec_h_fft", PART_LEN1 * aec->num_partitions,
-                            &aec->wfBuf[1][0]);
-
-  aec->data_dumper->DumpWav("aec_out_linear", PART_LEN, echo_subtractor_output,
-                            std::min(aec->sampFreq, 16000), 1);
 
   if (aec->metricsMode == 1) {
     UpdateLevel(&aec->linoutlevel,
@@ -1456,8 +1437,6 @@ static void ProcessNearendBlock(
            sizeof(float) * PART_LEN);
   }
 
-  aec->data_dumper->DumpWav("aec_out", PART_LEN, &output_block[0][0],
-                            std::min(aec->sampFreq, 16000), 1);
 }
 
 AecCore* WebRtcAec_CreateAec(int instance_count) {
@@ -1577,7 +1556,6 @@ static void SetErrorThreshold(AecCore* aec) {
 
 int WebRtcAec_InitAec(AecCore* aec, int sampFreq) {
   int i;
-  aec->data_dumper->InitiateNewSetOfRecordings();
 
   aec->sampFreq = sampFreq;
 
