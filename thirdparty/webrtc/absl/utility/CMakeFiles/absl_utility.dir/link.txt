@@ -1,0 +1,2 @@
+/usr/bin/ar qc libabsl_utility.a  CMakeFiles/absl_utility.dir/absl_utility_header_only_dummy.cc.o
+/usr/bin/ranlib libabsl_utility.a

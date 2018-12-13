@@ -1,0 +1,2 @@
+/usr/bin/ar qc libabsl_span.a  CMakeFiles/absl_span.dir/absl_span_header_only_dummy.cc.o
+/usr/bin/ranlib libabsl_span.a

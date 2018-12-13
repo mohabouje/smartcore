@@ -1,0 +1,2 @@
+/usr/bin/ar qc libabsl_any.a  CMakeFiles/absl_any.dir/absl_any_header_only_dummy.cc.o
+/usr/bin/ranlib libabsl_any.a

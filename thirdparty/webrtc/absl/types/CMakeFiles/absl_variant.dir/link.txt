@@ -1,0 +1,2 @@
+/usr/bin/ar qc libabsl_variant.a  CMakeFiles/absl_variant.dir/bad_variant_access.cc.o
+/usr/bin/ranlib libabsl_variant.a

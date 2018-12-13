@@ -7,6 +7,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 
 set(DSP_FILES
+        common_audio/ring_buffer.h
+        common_audio/ring_buffer.c
         common_audio/signal_processing/include/signal_processing_library.h
         common_audio/signal_processing/include/spl_inl.h
         common_audio/signal_processing/auto_corr_to_refl_coef.c
@@ -112,3 +114,51 @@ install(TARGETS webrtc-agc
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/smartmeet/core/")
+
+
+
+set(AEC_FILES
+        modules/audio_processing/aec/aec_core.h
+        modules/audio_processing/aec/aec_core.cc
+        modules/audio_processing/aec/aec_core_sse2.cc
+        modules/audio_processing/aec/aec_common.h
+        modules/audio_processing/aec/aec_core_optimized_methods.h
+        modules/audio_processing/aec/aec_resampler.cc
+        modules/audio_processing/aec/aec_resampler.h
+        modules/audio_processing/aec/echo_cancellation.h
+        modules/audio_processing/aec/echo_cancellation.cc
+        modules/audio_processing/utility/block_mean_calculator.h
+        modules/audio_processing/utility/block_mean_calculator.cc
+        modules/audio_processing/utility/delay_estimator.h
+        modules/audio_processing/utility/delay_estimator.cc
+        modules/audio_processing/utility/delay_estimator_wrapper.h
+        modules/audio_processing/utility/delay_estimator_wrapper.cc
+        modules/audio_processing/utility/delay_estimator_internal.h
+        modules/audio_processing/utility/ooura_fft.h
+        modules/audio_processing/utility/ooura_fft.cc
+        modules/audio_processing/utility/ooura_fft_sse2.cc
+        modules/audio_processing/utility/ooura_fft_tables_common.h
+        modules/audio_processing/logging/apm_data_dumper.h
+        modules/audio_processing/logging/apm_data_dumper.cc
+        system_wrappers/include/metrics.h
+        system_wrappers/source/metrics.cc
+        system_wrappers/include/cpu_features_wrapper.h
+        system_wrappers/source/cpu_features.cc
+        rtc_base/criticalsection.h
+        rtc_base/criticalsection.cc
+        rtc_base/platform_thread_types.h
+        rtc_base/platform_thread_types.cc)
+
+add_library(webrtc-aec SHARED ${AEC_FILES})
+target_include_directories(webrtc-aec PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(webrtc-aec PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/modules/audio_processing/agc/legacy/)
+target_compile_definitions(webrtc-aec PRIVATE -D__native_client__ -DWEBRTC_APM_DEBUG_DUMP=0 -DWEBRTC_POSIX -DWEBRTC_LINUX)
+target_link_libraries(webrtc-aec PRIVATE webrtc-dsp)
+set_target_properties(webrtc-aec PROPERTIES PUBLIC_HEADER modules/audio_processing/agc/legacy/gain_control.h)
+
+include(GNUInstallDirs)
+install(TARGETS webrtc-aec
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/smartmeet/core/")
+

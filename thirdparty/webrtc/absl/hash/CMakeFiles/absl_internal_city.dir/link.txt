@@ -1,0 +1,2 @@
+/usr/bin/ar qc libabsl_internal_city.a  CMakeFiles/absl_internal_city.dir/internal/city.cc.o
+/usr/bin/ranlib libabsl_internal_city.a

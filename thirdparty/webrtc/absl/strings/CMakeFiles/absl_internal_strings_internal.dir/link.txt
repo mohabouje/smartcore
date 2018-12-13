@@ -1,0 +1,2 @@
+/usr/bin/ar qc libabsl_internal_strings_internal.a  CMakeFiles/absl_internal_strings_internal.dir/internal/ostringstream.cc.o CMakeFiles/absl_internal_strings_internal.dir/internal/utf8.cc.o
+/usr/bin/ranlib libabsl_internal_strings_internal.a
