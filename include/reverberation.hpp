@@ -22,9 +22,11 @@ namespace score {
          * @param sample_rate Sampling frequency in Hz,
          * @param receiver_count  Number of receivers
          * @param sound_speed Speed of the sound
+         * @param frame_size Length of the frames
          * @param mode Operational mode.
          */
-        Reverberation(std::int32_t sample_rate, std::uint8_t receiver_count, float sound_speed = 343.2f, Mode mode = Mode::SubCardioid);
+        Reverberation(std::int32_t sample_rate, std::uint8_t receiver_count, std::size_t frame_size,
+                      float sound_speed = 343.2f, Mode mode = Mode::SubCardioid);
 
         /**
          * @brief Default destructor

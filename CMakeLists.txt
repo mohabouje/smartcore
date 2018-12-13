@@ -23,6 +23,7 @@ file(GLOB library_src
 add_library(${PROJECT_NAME} SHARED ${library_src})
 target_include_directories(${PROJECT_NAME} PUBLIC include/)
 target_include_directories(${PROJECT_NAME} PRIVATE thirdparty/webrtc/)
+target_compile_options(${PROJECT_NAME} PRIVATE -DUSE_LIBSAMPLERATE -DUSE_LIBSNDFILE -DUSE_LIBFFTW)
 target_link_libraries(${PROJECT_NAME} PRIVATE
         fvad
         rnnoise
@@ -32,7 +33,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         webrtc-aec
         webrtc-red
         webrtc-rnn-vad
+        fftw3f
         sndfile
+        samplerate
         portaudio
         speexdsp)
 target_compile_options(${PROJECT_NAME} PRIVATE -DWEBRTC_POSIX)

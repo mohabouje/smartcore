@@ -14,9 +14,9 @@ namespace score {
          * in terms of output quality.
          */
         enum class Quality {
-            HighQuality		= 10,
-            MediumQuality = 5,
-            LowQuality = 0,
+            HighQuality		= 0,
+            MediumQuality = 1,
+            LowQuality = 4,
         };
 
         /**
@@ -43,13 +43,6 @@ namespace score {
          * @return Current ratio (output sample rate / input sample rate).
          */
         float ratio() const;
-
-        /**
-         * @brief Set a new ratio (output sample rate / input sample rate).
-         * @throws std::runtime_error If the ratio is invalid.
-         * @param ratio Output sample rate / input sample rate).
-         */
-        void setRatio(float ratio);
 
         /**
          * @brief Returns the current algorithm quality

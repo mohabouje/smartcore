@@ -1,6 +1,8 @@
 #include "gain.hpp"
 #include "utils.hpp"
 
+#include <edsp/algorithm/amplifier.hpp>
+
 using namespace score;
 
 struct Gain::Pimpl {
@@ -33,9 +35,8 @@ struct Gain::Pimpl {
             for (auto ch = 0ul; ch < input.channels(); ++ch) {
                 Converter::S16ToFloatS16(input.channel(ch), input.framesPerChannel(), cast_data_.data());
                 {
-                    for (auto i = 0ul; i < input.framesPerChannel(); ++i) {
-                        cast_data_[i] *= current_gain_;
-                    }
+                    edsp::amplifier(std::begin(cast_data_), std::end(cast_data_),
+                                    std::begin(cast_data_), current_gain_);
                 }
                 Converter::FloatS16ToS16(cast_data_.data(), output.framesPerChannel(), output.channel(ch));
             }

@@ -1,7 +1,7 @@
 #include "doa.hpp"
 #include "utils.hpp"
 
-#include <eigen3/unsupported/Eigen/FFT>
+#include <edsp/spectral/dft.hpp>
 #include <complex>
 #include <algorithm>
 
@@ -40,15 +40,18 @@ struct DOA::Pimpl {
         Converter::S16ToFloat(signal, size, signal_.data());
         Converter::S16ToFloat(reference, size, reference_.data());
 
+        edsp::spectral::dft(std::begin(signal_),
+                            std::end(signal_), std::begin(signal_spectrum_));
+        edsp::spectral::dft(std::begin(reference_),
+                            std::end(reference_), std::begin(reference_spectrum_));
 
-        fft_.fwd(signal_spectrum_, signal_);
-        fft_.fwd(reference_spectrum_ , reference_);
         std::transform(signal_spectrum_.begin(), signal_spectrum_.end(),
                 reference_spectrum_.begin(), signal_spectrum_.begin(), [](const auto& s, const auto& r) {
             const auto operation = s * std::conj(r);
             return operation / std::abs(operation);
         });
-        fft_.inv(gcc_, signal_spectrum_);
+
+        edsp::spectral::idft(std::begin(signal_spectrum_), std::end(signal_spectrum_), std::begin(gcc_));
 
         const auto maximum_tau_index = static_cast<std::size_t >(sample_rate_ * maximum_tau_);
         const auto max_shift = std::min(expected_size / 2, maximum_tau_index);
@@ -106,7 +109,6 @@ struct DOA::Pimpl {
     float maximum_tau_{};
     float microphone_distances_{};
     float sound_speed_{};
-    Eigen::FFT<float> fft_;
 };
 
 DOA::DOA(std::int32_t sample_rate, float microphone_distances, float sound_speed) :
