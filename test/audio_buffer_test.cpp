@@ -22,16 +22,19 @@ TEST(TestingAudioBuffer, CreateDefault) {
 }
 
 TEST(IFTestingAudioBuffer, CreateFromRawMono) {
-    std::array<std::int16_t, NumberFrames> temporal{};
+    std::array<std::int16_t, NumberFrames> temporal{}, restored{};
     std::iota(std::begin(temporal), std::end(temporal), 0);
+
     AudioBuffer buffer(SampleRate, Mono, NumberFrames, temporal.data());
     EXPECT_TRUE(std::equal(std::begin(temporal), std::end(temporal), buffer.channel(0)));
-    EXPECT_TRUE(std::equal(std::begin(temporal), std::end(temporal), buffer.interleave()));
+
+    buffer.toInterleave(restored.data());
+    EXPECT_TRUE(std::equal(std::begin(temporal), std::end(temporal), restored.data()));
 }
 
 
 TEST(TestInputAudioFile, CreateFromRawStereo) {
-    std::array<std::int16_t, Stereo * NumberFrames> temporal{};
+    std::array<std::int16_t, Stereo * NumberFrames> temporal{}, restored{};
     auto* ptr = temporal.data();
     for (auto i = 0ul; i < NumberFrames; ++i) {
         for (auto j = 0ul; j < Stereo; ++j) {
@@ -49,11 +52,13 @@ TEST(TestInputAudioFile, CreateFromRawStereo) {
     for (auto i = 0ul; i < Stereo; ++i) {
         EXPECT_TRUE(std::equal(std::begin(single), std::end(single), buffer.channel(i)));
     }
-    EXPECT_TRUE(std::equal(std::begin(temporal), std::end(temporal), buffer.interleave()));
+
+    buffer.toInterleave(restored.data());
+    EXPECT_TRUE(std::equal(std::begin(temporal), std::end(temporal), std::begin(restored)));
 }
 
 TEST(TestInputAudioFile, UpdateFromRawData) {
-    std::array<std::int16_t, Stereo * NumberFrames> temporal{};
+    std::array<std::int16_t, Stereo * NumberFrames> temporal{}, restored{};
     auto* ptr = temporal.data();
     for (auto i = 0ul; i < NumberFrames; ++i) {
         for (auto j = 0ul; j < Stereo; ++j) {
@@ -73,5 +78,7 @@ TEST(TestInputAudioFile, UpdateFromRawData) {
     for (auto i = 0ul; i < Stereo; ++i) {
         EXPECT_TRUE(std::equal(std::begin(single), std::end(single), buffer.channel(i)));
     }
-    EXPECT_TRUE(std::equal(std::begin(temporal), std::end(temporal), buffer.interleave()));
+
+    buffer.toInterleave(restored.data());
+    EXPECT_TRUE(std::equal(std::begin(temporal), std::end(temporal), std::begin(restored)));
 }

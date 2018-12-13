@@ -16,6 +16,19 @@ namespace score {
         NumberBands
     };
 
+    /**
+     * The SampleRates enum represent the different supported sample rates.
+     */
+    enum SampleRates : unsigned int {
+        SampleRate8kHz = 8000,
+        SampleRate16kHz = 16000,
+        SampleRate32kHz = 32000,
+        SampleRate48kHz = 48000
+    };
+
+    constexpr auto MaxFloatS16 = std::numeric_limits<std::int16_t>::max();
+    constexpr auto MinFloatS16 = std::numeric_limits<std::int16_t>::min();
+
     template <typename T>
     using Matrix = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 

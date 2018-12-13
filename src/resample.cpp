@@ -32,13 +32,18 @@ struct ReSampler::Pimpl {
                                      + std::to_string(input_rate_) + " Hz.");
         }
 
-        output.setSampleRate(output_rate_);
-        output.resize(input.channels(), static_cast<size_t>(input.framesPerChannel() * ratio_));
-
+        const auto expected_output_size = static_cast<size_t>(input.framesPerChannel() * ratio_);
         auto input_size = static_cast<uint32_t>(input.framesPerChannel() * input.channels()),
-            output_size = static_cast<uint32_t>(output.framesPerChannel() * output.channels());
-        error_ = speex_resampler_process_interleaved_int(state_, input.interleave(), &input_size, output.interleave(), &output_size);
+            output_size = static_cast<uint32_t>(input.channels() * expected_output_size);
+        input_.resize(input_size);
+        output_.resize(output_size);
+
+        error_ = speex_resampler_process_interleaved_int(state_, input_.data(), &input_size,
+                output_.data(), &output_size);
         ensure_no_error();
+
+        output.setSampleRate(output_rate_);
+        output.fromInterleave(input.channels(), expected_output_size, output_.data());
     }
 
     void reset() {
@@ -65,6 +70,8 @@ struct ReSampler::Pimpl {
     }
 
     SpeexResamplerState* state_{nullptr};
+    std::vector<std::int16_t> input_;
+    std::vector<std::int16_t> output_;
     std::uint32_t input_rate_;
     std::uint32_t output_rate_;
     std::uint8_t channels_{0};

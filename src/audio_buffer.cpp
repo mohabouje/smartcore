@@ -85,15 +85,6 @@ size_t AudioBuffer::duration() const {
     return static_cast<std::size_t >(1e3 * frames_per_channel_ / sample_rate_);
 }
 
-std::int16_t* AudioBuffer::interleave() const {
-    interleaved_data_.resize(channels_ * frames_per_channel_);
-    for (auto i = 0ul, index = 0ul; i < frames_per_channel_; ++i) {
-        for (auto j = 0ul; j < channels_; ++j, ++index) {
-            interleaved_data_[index] = deinterleaved_data_(j, i);
-        }
-    }
-    return interleaved_data_.data();
-}
 
 void AudioBuffer::copyTo(AudioBuffer &buffer) const {
     buffer.setSampleRate(buffer.sampleRate());
@@ -102,5 +93,21 @@ void AudioBuffer::copyTo(AudioBuffer &buffer) const {
     }
 
     buffer.deinterleaved_data_ = this->deinterleaved_data_;
+}
+
+void AudioBuffer::toInterleave(int16_t *data) const {
+    for (auto i = 0ul, index = 0ul; i < frames_per_channel_; ++i) {
+        for (auto j = 0ul; j < channels_; ++j, ++index) {
+            data[index] = deinterleaved_data_(j, i);
+        }
+    }
+}
+
+std::int16_t *AudioBuffer::data() {
+    return channel(0);
+}
+
+const std::int16_t *AudioBuffer::data() const {
+    return channel(0);
 }
 

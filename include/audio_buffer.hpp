@@ -91,6 +91,18 @@ namespace score {
         void setTimestamp(double timestamp);
 
         /**
+         * @brief Returns a pointer to the internal raw data
+         * @return Pointer to the internal raw data.
+         */
+        const std::int16_t* data() const;
+
+        /**
+         * @brief Returns a pointer to the internal raw data
+         * @return Pointer to the internal raw data.
+         */
+        std::int16_t* data();
+
+        /**
          * @brief Returns the size of the underlying raw data.
          * @brief Size of the internal buffer.
          */
@@ -125,13 +137,6 @@ namespace score {
         const std::int16_t* operator[](std::size_t channel) const;
 
         /**
-         * @brief Returns the interleaved raw data of the input buffer
-         * The length of the array is equal to channels * framesPerBuffer
-         * @return Vector storing the internal raw data-
-         */
-        std::int16_t* interleave() const;
-
-        /**
          * @brief Copy the data of the frame in to another one.
          * @param buffer Frame where the data must to be copied.
          */
@@ -145,13 +150,19 @@ namespace score {
          */
         void fromInterleave(std::int8_t channels, std::size_t frames_per_channel, const int16_t *raw);
 
+        /**
+         * @brief Returns the interleaved raw data of the input buffer
+         * The length of the array is equal to channels * framesPerBuffer
+         * @param data Array of data where to store the interleaved data.
+         */
+         void toInterleave(std::int16_t* data) const;
+
     private:
         double timestamp_{};
         std::int32_t sample_rate_{};
         std::int8_t channels_{};
         std::size_t frames_per_channel_{};
         Matrix<std::int16_t> deinterleaved_data_{};
-        mutable Vector<std::int16_t> interleaved_data_{};
     };
 
 

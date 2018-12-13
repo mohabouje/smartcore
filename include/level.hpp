@@ -22,7 +22,7 @@ namespace score {
         /**
          * @brief Computes the average level (rms) of the input frame.
          * @param input Vector storing the input audio samples.
-         *  @return Vector of the levels at each channel
+         * @return Vector of the levels at each channel
          */
         const Vector<float> & process(const AudioBuffer& input);
 

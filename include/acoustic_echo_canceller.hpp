@@ -20,8 +20,8 @@ namespace score {
          * the third of the room reverberation time. When it comes to echo tail length (filter length), longer is *not*
          * better. Actually, the longer the tail length, the longer it takes for the filter to adapt.
          */
-        AEC(std::int32_t sample_rate, std::size_t record_channels,
-            std::size_t played_channels, std::size_t frame_size, std::size_t filter_length);
+        AEC(std::int32_t sample_rate, std::int8_t record_channels,
+            std::int8_t played_channels, std::size_t frame_size, std::size_t filter_length);
 
         /**
          * @brief Default destructor

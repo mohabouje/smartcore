@@ -11,7 +11,10 @@ struct AEC::Pimpl {
           std::size_t frame_size,
           std::size_t filter_length) :
         record_channels_(record_channels),
-        play_channels_(played_channels)
+        play_channels_(played_channels),
+        record_(record_channels * frame_size),
+        play_(played_channels * frame_size),
+        clean_(record_channels * frame_size)
     {
 
         if (frame_size > 0.02 * sample_rate) {
@@ -68,18 +71,25 @@ struct AEC::Pimpl {
             + " frames per buffer.");
         }
 
+        recorded.toInterleave(record_.data());
+        played.toInterleave(play_.data());
+
+        speex_echo_cancellation(state_, record_.data(), play_.data(), clean_.data());
+
         output.setSampleRate(sample_rate);
-        output.resize(recorded.channels(), recorded.framesPerChannel());
-        speex_echo_cancellation(state_, recorded.interleave(), played.interleave(), output.interleave());
+        output.fromInterleave(record_channels_, frame_size, clean_.data());
     }
 
 private:
     SpeexEchoState* state_{nullptr};
-    std::size_t record_channels_;
-    std::size_t play_channels_;
+    std::vector<std::int16_t> record_;
+    std::vector<std::int16_t> play_;
+    std::vector<std::int16_t> clean_;
+    std::int8_t record_channels_;
+    std::int8_t play_channels_;
 };
 
-score::AEC::AEC(std::int32_t sample_rate, std::size_t record_channels, std::size_t played_channels, std::size_t frame_size,
+score::AEC::AEC(std::int32_t sample_rate, std::int8_t record_channels, std::int8_t played_channels, std::size_t frame_size,
                 std::size_t filter_length) :
     pimpl_(std::make_unique<Pimpl>(sample_rate, record_channels, played_channels, frame_size, filter_length)) {
 

@@ -30,6 +30,8 @@ namespace score {
 
         static  void FloatS16ToFloat(const float* src, std::size_t size, float* dest);
 
+        static float FloatS16ToDbfs(float v);
+
     };
 
 

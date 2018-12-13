@@ -22,15 +22,20 @@ struct Encoder::Pimpl {
     }
 
     void process(const AudioBuffer& buffer) {
-        const auto samples = sf_write_short(file_, buffer.interleave(), buffer.size());
+        temporal_.resize(buffer.size());
+        buffer.toInterleave(temporal_.data());
+
+        const auto samples = sf_write_short(file_, temporal_.data(), buffer.size());
         if (samples != buffer.size()) {
             throw std::runtime_error("Error while encoding buffer. Encoded samples: " + std::to_string(samples)
             + "/" + std::to_string(buffer.size()));
         }
         sf_write_sync(file_);
+
     }
 
 private:
+    std::vector<std::int16_t> temporal_;
     SF_INFO info_{};
     SNDFILE* file_;
 };

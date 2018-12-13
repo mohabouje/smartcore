@@ -10,6 +10,7 @@ find_package(GTest REQUIRED)
 set(SOURCE_FILES
         testing_gtest.cpp
         audio_buffer_test.cpp
+        acoustic_echo_canceller_test.cpp
         level_test.cpp)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
