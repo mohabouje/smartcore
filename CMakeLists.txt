@@ -29,6 +29,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         webrtc-noise
         webrtc-dsp
         webrtc-agc
+        webrtc-aec
         sndfile
         portaudio
         speexdsp)
