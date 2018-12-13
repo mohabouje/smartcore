@@ -199,7 +199,7 @@ struct AGC::Pimpl {
     }
 
     void analyze(const AudioBuffer& input) {
-        switch (mode_) {
+        /*switch (mode_) {
             case Mode::AdaptiveAnalog:
                 for (auto i = 0ul; i < channels_; ++i) {
                     band_extractor_.process(input.channel(i), input.framesPerChannel(), input_bands_);
@@ -226,7 +226,7 @@ struct AGC::Pimpl {
                 break;
             case Mode::FixedDigital:
                 break;
-        }
+        }*/
     }
 
     void process(const AudioBuffer& input, AudioBuffer& output) {
@@ -255,8 +255,9 @@ struct AGC::Pimpl {
         output.setSampleRate(sample_rate_);
         output.resize(input.channels(), input.framesPerChannel());
 
+        // TODO: review the AGC
 
-        analyze(input);
+      /*  analyze(input);
 
         for (auto i = 0ul; i < channels_; ++i) {
             auto capture_level = 0, stream_has_echo = 0;
@@ -273,7 +274,7 @@ struct AGC::Pimpl {
         }
 
         estimateAnalogCapturedLevel();
-        requestAnalogCapturedLevel();
+        requestAnalogCapturedLevel();*/
      }
 
 

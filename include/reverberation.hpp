@@ -148,7 +148,7 @@ namespace score {
          * @brief Returns the computed RIR for each receiver
          * @return A matrix representing the RIR in each receiver.
          */
-        const Matrix<double>& RIR() const;
+        const Matrix<float>& RIR() const;
 
         /**
          * @brief Adds the effect of the impulse response to input buffer and stored in the output buffer

@@ -25,7 +25,7 @@ struct Encoder::Pimpl {
         temporal_.resize(buffer.size());
         buffer.toInterleave(temporal_.data());
 
-        const auto samples = sf_write_short(file_, temporal_.data(), buffer.size());
+        const auto samples = sf_write_float(file_, temporal_.data(), buffer.size());
         if (samples != buffer.size()) {
             throw std::runtime_error("Error while encoding buffer. Encoded samples: " + std::to_string(samples)
             + "/" + std::to_string(buffer.size()));
@@ -35,7 +35,7 @@ struct Encoder::Pimpl {
     }
 
 private:
-    std::vector<std::int16_t> temporal_;
+    std::vector<float> temporal_;
     SF_INFO info_{};
     SNDFILE* file_;
 };

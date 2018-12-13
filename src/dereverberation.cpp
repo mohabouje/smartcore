@@ -78,7 +78,8 @@ struct DeReverberation::Pimpl {
 
         input.copyTo(output);
         for (auto i = 0ul; i < channels_; ++i) {
-            speex_preprocess_run(handlers_[i].state_, output.channel(i));
+            // TODO: update this
+            //speex_preprocess_run(handlers_[i].state_, output.channel(i));
         }
     }
 

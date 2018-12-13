@@ -56,11 +56,14 @@ struct VAD::Pimpl {
             throw std::invalid_argument("Invalid frame legnth. See SupportedFrameDuration for details.");
         }
 
+        /*
+         * TODO: conver to fixed point here
         const auto result = fvad_process(processor_, input.channel(0), input.framesPerChannel());
         if (result == -1) {
             throw std::runtime_error("Unexpected error");
         }
-        return (bool) result;
+        return (bool) result;*/
+        return true;
     }
 
     void reset() {

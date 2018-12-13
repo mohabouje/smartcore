@@ -71,7 +71,7 @@ namespace internal {
         }
     }
 
-    double gen_rir(Matrix<double>& imp,
+    double gen_rir(Matrix<float>& imp,
                    double c,
                    double fs,
                    const Vector<Point<float>>& rr,
@@ -368,23 +368,12 @@ struct Reverberation::Pimpl {
             updated_need_ = false;
         }
 
-        const auto fft_size = input.framesPerChannel();
-        temporal_buffer_.resize(fft_size, 0);
-        room_input_.resize(fft_size, 0);
-
         output.setSampleRate(input.sampleRate());
         output.resize(input.channels(), input.framesPerChannel());
         for (auto i = 0ul; i < receivers_count_; ++i) {
-
-            Converter::S16ToFloat(input.channel(i), input.framesPerChannel(), temporal_buffer_.data());
-            {
-                const auto* room = rir_.row(i).data();
-                std::copy(room, room + rir_.cols(), room_input_.data());
-                edsp::spectral::conv(std::begin(temporal_buffer_),
-                                     std::begin(temporal_buffer_) + input.framesPerChannel(),
-                                     std::begin(room_input_), std::begin(temporal_buffer_));
-            }
-            Converter::FloatToS16(temporal_buffer_.data(), output.framesPerChannel(), output.channel(i));
+            edsp::spectral::conv(input.channel(i),
+                                 input.channel(i) + input.framesPerChannel(),
+                                 static_cast<const float*>(rir_.row(i).data()),  output.channel(i));
         }
     }
 
@@ -403,13 +392,8 @@ struct Reverberation::Pimpl {
     Vector<Point<float>> receivers_{};
     Point<float> source_{};
     Mode mode_{};
-    Matrix<double> rir_{};
+    Matrix<float> rir_{};
     bool updated_need_{false};
-
-private:
-    // FFT configuration
-    Vector<float> temporal_buffer_;
-    Vector<float> room_input_;
 };
 
 Reverberation::Reverberation(std::int32_t sample_rate, std::uint8_t receiver_count, std::size_t frame_size, float sound_speed,
@@ -494,7 +478,7 @@ float Reverberation::soundSpeed() const {
     return pimpl_->sound_speed_;
 }
 
-const Matrix<double>& Reverberation::RIR() const {
+const Matrix<float>& Reverberation::RIR() const {
     return pimpl_->rir_;
 }
 

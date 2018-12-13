@@ -10,26 +10,13 @@ namespace score {
     public:
         /**
          * @brief Creates a down-mixing block that works in the given band
-         * @param band Band of frequencies used to generate the down mixed frame.
          */
-        explicit DownMix(Bands band);
+        DownMix();
 
         /**
          * @brief Default destructor
          */
         ~DownMix();
-
-        /**
-         * @brief Returns the band of frequencies used to generate the down mixed frame
-         * @return Band of operation.
-         */
-        Bands band() const;
-
-        /**
-         * @brief Sets the band of frequencies used to generate the down mixed frame
-         * @param band Band of operation.
-         */
-        void setBand(Bands band);
 
         /**
          * @brief Performs a Down-Mixing filter in an audio frame.

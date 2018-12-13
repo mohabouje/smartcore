@@ -47,19 +47,10 @@ struct NoiseSuppression::Pimpl {
             smart_pointer = std::make_unique<Handler>(sample_rate);
         }
         setPolicy(policy);
-        resize();
     }
 
     ~Pimpl() = default;
 
-    void resize() {
-        const auto expected_frames = static_cast<std::size_t>(ExpectedDuration * sample_rate_);
-        input_data_.resize(expected_frames);
-        output_data_.resize(expected_frames);
-        input_bands_ptr_[0] = input_data_.data();
-        output_bands_ptr_[0] = output_data_.data();
-    }
-    
 
     void setPolicy(NoiseSuppression::Policy policy) {
         const auto p = static_cast<std::underlying_type<NoiseSuppression::Policy>::type>(policy);
@@ -126,12 +117,10 @@ struct NoiseSuppression::Pimpl {
         output.setSampleRate(sample_rate_);
         output.resize(input.channels(), input.framesPerChannel());
         for (auto i = 0ul; i < channels_; ++i) {
-            Converter::S16ToFloatS16(input.channel(i), input.framesPerChannel(), input_bands_ptr_[0]);
-            {
-                WebRtcNs_Analyze(handlers_[i]->core(), input_data_.data());
-                WebRtcNs_Process(handlers_[i]->core(), &input_bands_ptr_[0], 1, &output_bands_ptr_[0]);
-            }
-            Converter::FloatS16ToS16(input_bands_ptr_[0], output.framesPerChannel(), output.channel(i));
+            input_bands_ptr_[0] = input.channel(i);
+            output_bands_ptr_[0] = output.channel(i);
+            WebRtcNs_Analyze(handlers_[i]->core(), input.channel(i));
+            WebRtcNs_Process(handlers_[i]->core(), &input_bands_ptr_[0], 1, &output_bands_ptr_[0]);
         }
     }
 
@@ -143,12 +132,8 @@ private:
     std::int8_t channels_{};
     std::vector<float> estimated_noise_;
     std::vector<std::unique_ptr<Handler>> handlers_{};
-    std::vector<float> input_data_;
-    std::vector<float> output_data_;
-    std::array<float*, 1> input_bands_ptr_;
+    std::array<const float*, 1> input_bands_ptr_;
     std::array<float*, 1> output_bands_ptr_;
-    BandExtractor band_extractor_{};
-    
 };
 
 NoiseSuppression::NoiseSuppression(std::int32_t sample_rate, std::int8_t channels, Policy policy)

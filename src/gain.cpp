@@ -33,12 +33,9 @@ struct Gain::Pimpl {
         // Gain is constant and different from 1.
         if (last_gain_ == current_gain_) {
             for (auto ch = 0ul; ch < input.channels(); ++ch) {
-                Converter::S16ToFloatS16(input.channel(ch), input.framesPerChannel(), cast_data_.data());
-                {
-                    edsp::amplifier(std::begin(cast_data_), std::end(cast_data_),
-                                    std::begin(cast_data_), current_gain_);
-                }
-                Converter::FloatS16ToS16(cast_data_.data(), output.framesPerChannel(), output.channel(ch));
+                auto* out = output.channel(ch);
+                auto* in = input.channel(ch);
+                edsp::amplifier(in, in + input.framesPerChannel(), out, current_gain_);
             }
             return;
         }
@@ -47,22 +44,19 @@ struct Gain::Pimpl {
         const auto inverse_samples_per_channel = 1.0f / static_cast<float>(input.channels());
         const float increment = (current_gain_ - last_gain_) * inverse_samples_per_channel;
         for (auto ch = 0ul; ch < input.channels(); ++ch) {
-            Converter::S16ToFloatS16(input.channel(ch), input.framesPerChannel(), cast_data_.data());
-            {
-                float gain = last_gain_;
-                for (auto i = 0ul; i < input.framesPerChannel(); ++i) {
-                    cast_data_[i] *= gain;
-                    gain += increment;
-                }
+            auto* out = output.channel(ch);
+            auto* in = input.channel(ch);
+            float gain = last_gain_;
+            for (auto i = 0ul; i < input.framesPerChannel(); ++i) {
+                out[i] = in[i] * gain;
+                gain += increment;
             }
-            Converter::FloatS16ToS16(cast_data_.data(), output.framesPerChannel(), output.channel(ch));
         }
 
         last_gain_ = current_gain_;
     }
 
 
-    std::vector<float> cast_data_;
     float current_gain_;
     float last_gain_;
 };

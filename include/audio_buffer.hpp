@@ -34,7 +34,7 @@ namespace score {
          * @param frames_per_channel Number of samples per buffer.
          * @param raw Array of raw data holding the audio samples.
          */
-        AudioBuffer(std::int32_t sample_rate, std::int8_t channels, std::size_t frames_per_channel, const int16_t* raw);
+        AudioBuffer(std::int32_t sample_rate, std::int8_t channels, std::size_t frames_per_channel, const float* raw);
 
         /**
          * @brief Set the buffer sampling rate.
@@ -94,13 +94,13 @@ namespace score {
          * @brief Returns a pointer to the internal raw data
          * @return Pointer to the internal raw data.
          */
-        const std::int16_t* data() const;
+        const float* data() const;
 
         /**
          * @brief Returns a pointer to the internal raw data
          * @return Pointer to the internal raw data.
          */
-        std::int16_t* data();
+        float* data();
 
         /**
          * @brief Returns the size of the underlying raw data.
@@ -113,28 +113,28 @@ namespace score {
          * @param channel Desired channel.
          * @return The channel's buffer.
          */
-        std::int16_t* channel(std::size_t channel);
+        float* channel(std::size_t channel);
 
         /**
          * @brief Returns the buffer of the given channel.
          * @param channel Desired channel.
          * @return The channel's buffer.
          */
-        const std::int16_t* channel(std::size_t channel) const;
+        const float* channel(std::size_t channel) const;
 
         /**
          * @brief Returns the buffer of the given channel.
          * @param channel Desired channel.
          * @return The channel's buffer.
          */
-        std::int16_t* operator[](std::size_t channel);
+        float* operator[](std::size_t channel);
 
         /**
          * @brief Returns the buffer of the given channel.
          * @param channel Desired channel.
          * @return The channel's buffer.
          */
-        const std::int16_t* operator[](std::size_t channel) const;
+        const float* operator[](std::size_t channel) const;
 
         /**
          * @brief Copy the data of the frame in to another one.
@@ -148,21 +148,21 @@ namespace score {
          * @param frames_per_channel Number of samples per buffer.
          * @param raw Array of raw data holding the audio samples.
          */
-        void fromInterleave(std::int8_t channels, std::size_t frames_per_channel, const int16_t *raw);
+        void fromInterleave(std::int8_t channels, std::size_t frames_per_channel, const float *raw);
 
         /**
          * @brief Returns the interleaved raw data of the input buffer
          * The length of the array is equal to channels * framesPerBuffer
          * @param data Array of data where to store the interleaved data.
          */
-         void toInterleave(std::int16_t* data) const;
+         void toInterleave(float* data) const;
 
     private:
         double timestamp_{};
         std::int32_t sample_rate_{};
         std::int8_t channels_{};
         std::size_t frames_per_channel_{};
-        Matrix<std::int16_t> deinterleaved_data_{};
+        Matrix<float> deinterleaved_data_{};
     };
 
 

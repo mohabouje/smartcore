@@ -16,12 +16,12 @@ AudioBuffer::AudioBuffer(std::int32_t sample_rate, std::int8_t channels, std::si
     resize(channels, frames_per_channel);
 }
 
-AudioBuffer::AudioBuffer(std::int32_t sample_rate, std::int8_t channels, std::size_t frames_per_channel, const int16_t *raw) :
+AudioBuffer::AudioBuffer(std::int32_t sample_rate, std::int8_t channels, std::size_t frames_per_channel, const float *raw) :
     AudioBuffer(sample_rate, channels, frames_per_channel) {
     fromInterleave(channels, frames_per_channel, raw);
 }
 
-void AudioBuffer::fromInterleave(std::int8_t channels, std::size_t frames_per_channel, const int16_t *raw) {
+void AudioBuffer::fromInterleave(std::int8_t channels, std::size_t frames_per_channel, const float *raw) {
     resize(channels, frames_per_channel);
     for (auto i = 0ul, index = 0ul; i < frames_per_channel; ++i) {
         for (auto j = 0ul; j < channels; ++j, ++index) {
@@ -37,19 +37,19 @@ void score::AudioBuffer::resize(std::int8_t channels, std::size_t frames_per_cha
 }
 
 
-std::int16_t *AudioBuffer::channel(std::size_t channel) {
+float *AudioBuffer::channel(std::size_t channel) {
     return deinterleaved_data_.row(channel).data();
 }
 
-const std::int16_t *AudioBuffer::channel(std::size_t channel) const {
+const float *AudioBuffer::channel(std::size_t channel) const {
     return deinterleaved_data_.row(channel).data();
 }
 
-std::int16_t *AudioBuffer::operator[](std::size_t channel) {
+float *AudioBuffer::operator[](std::size_t channel) {
     return deinterleaved_data_.row(channel).data();
 }
 
-const std::int16_t *AudioBuffer::operator[](std::size_t channel) const {
+const float *AudioBuffer::operator[](std::size_t channel) const {
     return deinterleaved_data_.row(channel).data();
 }
 
@@ -95,7 +95,7 @@ void AudioBuffer::copyTo(AudioBuffer &buffer) const {
     buffer.deinterleaved_data_ = this->deinterleaved_data_;
 }
 
-void AudioBuffer::toInterleave(int16_t *data) const {
+void AudioBuffer::toInterleave(float *data) const {
     for (auto i = 0ul, index = 0ul; i < frames_per_channel_; ++i) {
         for (auto j = 0ul; j < channels_; ++j, ++index) {
             data[index] = deinterleaved_data_(j, i);
@@ -103,11 +103,11 @@ void AudioBuffer::toInterleave(int16_t *data) const {
     }
 }
 
-std::int16_t *AudioBuffer::data() {
+float *AudioBuffer::data() {
     return channel(0);
 }
 
-const std::int16_t *AudioBuffer::data() const {
+const float *AudioBuffer::data() const {
     return channel(0);
 }
 

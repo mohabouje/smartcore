@@ -71,13 +71,15 @@ struct AEC::Pimpl {
             + " frames per buffer.");
         }
 
-        recorded.toInterleave(record_.data());
+        // TODO: fix the AEC
+        /*
+            recorded.toInterleave(record_.data());
         played.toInterleave(play_.data());
 
         speex_echo_cancellation(state_, record_.data(), play_.data(), clean_.data());
 
         output.setSampleRate(sample_rate);
-        output.fromInterleave(record_channels_, frame_size, clean_.data());
+        output.fromInterleave(record_channels_, frame_size, clean_.data());*/
     }
 
 private:

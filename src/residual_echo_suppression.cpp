@@ -79,7 +79,8 @@ struct ResidualEchoSuppression::Pimpl {
 
         input.copyTo(output);
         for (auto i = 0ul; i < channels_; ++i) {
-            speex_preprocess_run(handlers_[i].state_, output.channel(i));
+            // TODO: Something has to be done here!
+            //speex_preprocess_run(handlers_[i].state_, output.channel(i));
         }
     }
 

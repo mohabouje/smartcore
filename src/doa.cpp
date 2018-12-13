@@ -25,7 +25,7 @@ struct DOA::Pimpl {
 
     }
 
-    float gccPhat(const std::int16_t* signal, const std::int16_t* reference, size_t size) {
+    float gccPhat(const float* signal, const float* reference, size_t size) {
         const auto expected_size = 2 * size;
         if (expected_size != fft_size_) {
             reset();
@@ -37,8 +37,8 @@ struct DOA::Pimpl {
             gcc_.resize(expected_size);
         }
 
-        Converter::S16ToFloat(signal, size, signal_.data());
-        Converter::S16ToFloat(reference, size, reference_.data());
+        std::copy(signal, signal + size, signal_.data());
+        std::copy(reference, reference + size, reference_.data());
 
         edsp::spectral::dft(std::begin(signal_),
                             std::end(signal_), std::begin(signal_spectrum_));

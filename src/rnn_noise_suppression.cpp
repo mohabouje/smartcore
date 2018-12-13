@@ -67,11 +67,7 @@ struct DeepNoiseSuppression::Pimpl {
         output.setSampleRate(DefaultSampleRate);
         output.resize(input.channels(), input.framesPerChannel());
         for (auto i = 0ul; i < channels_; ++i) {
-            Converter::S16ToFloat(input.channel(i), DefaultBufferSize, input_.data());
-            {
-                rnnoise_process_frame(handlers_[i]->core(), output_.data(), input_.data());
-            }
-            Converter::FloatToS16(output_.data(), DefaultBufferSize, output.channel(i));
+            rnnoise_process_frame(handlers_[i]->core(), output.channel(i), input.channel(i));
         }
 
     }
@@ -79,8 +75,6 @@ struct DeepNoiseSuppression::Pimpl {
 private:
     std::int8_t channels_;
     std::vector<std::unique_ptr<Handler>> handlers_;
-    std::array<float, DefaultBufferSize> input_;
-    std::array<float, DefaultBufferSize> output_;
 };
 
 

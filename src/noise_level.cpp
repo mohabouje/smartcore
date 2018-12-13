@@ -1,8 +1,7 @@
 #include "noise_level.hpp"
 #include "utils.hpp"
 
-#include <algorithm>
-#include <numeric>
+#include <edsp/feature/temporal/energy.hpp>
 #include <cmath>
 
 using namespace score;
@@ -10,7 +9,6 @@ using namespace score;
 struct NoiseLevel::Pimpl {
 
     Pimpl(std::int32_t sample_rate, std::size_t frame_length) :
-        cast_data_(frame_length),
         sample_rate_(sample_rate),
         frame_length_(frame_length)
     {
@@ -21,10 +19,8 @@ struct NoiseLevel::Pimpl {
     float computeEnergy(const AudioBuffer& input) {
         auto energy = 0.0f;
         for (auto i = 0; i < input.channels(); ++i) {
-            Converter::S16ToFloatS16(input.channel(i), input.framesPerChannel(), cast_data_.data());
-            const auto channel_energy =  std::accumulate(cast_data_.begin(), cast_data_.end(), 0.f,
-                                    [](auto a, auto b) { return a + b * b; });
-            energy = std::max(energy, channel_energy);
+            energy = std::max(energy,
+                    edsp::feature::energy(input.channel(i), input.channel(i) + input.framesPerChannel()));
         }
         return energy;
     }
@@ -83,7 +79,6 @@ struct NoiseLevel::Pimpl {
         return rms(noise_energy_);
     }
 
-    std::vector<float> cast_data_;
     std::int32_t sample_rate_;
     std::size_t frame_length_;
     int noise_energy_hold_counter_{0};

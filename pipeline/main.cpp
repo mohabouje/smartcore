@@ -26,7 +26,7 @@ int main() {
     auto low_cut = std::make_unique<LowCutFilter>(sample_rate, channels);
     auto denoiser = std::make_unique<NoiseSuppression>(sample_rate, channels, NoiseSuppression::Aggressive);
     auto rnn_denoiser = std::make_unique<DeepNoiseSuppression>(channels);
-    auto downmix = std::make_unique<DownMix>(Bands::Band0To8kHz);
+    auto downmix = std::make_unique<DownMix>();
 
     auto upsampler = std::make_unique<ReSampler>(channels, sample_rate, 48000, ReSampler::Quality::HighQuality);
     auto downsampler = std::make_unique<ReSampler>(channels, 48000, sample_rate, ReSampler::Quality::HighQuality);

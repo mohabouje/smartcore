@@ -40,7 +40,7 @@ struct Recorder::Pimpl {
     void restart() {
         input_params_.channelCount = static_cast<int>(channels_);
         input_params_.device = device_index_;
-        input_params_.sampleFormat = paInt16;
+        input_params_.sampleFormat = paFloat32 ;
         input_params_.suggestedLatency = Pa_GetDeviceInfo(device_index_)->defaultLowInputLatency;
         input_params_.hostApiSpecificStreamInfo = nullptr;
 
@@ -91,7 +91,7 @@ struct Recorder::Pimpl {
                      const PaStreamCallbackTimeInfo *timeInfo,
                      PaStreamCallbackFlags statusFlags) {
 
-        auto *ptr = (const std::int16_t *) inputBuffer;
+        auto *ptr = (const float *) inputBuffer;
         record_buffer_.fromInterleave(channels_, frames_per_buffer_, ptr);
         record_buffer_.setTimestamp(timeInfo->currentTime + timeInfo->inputBufferAdcTime);
         on_buffer_ready_(record_buffer_);
@@ -102,7 +102,7 @@ struct Recorder::Pimpl {
         PaStreamParameters output_params;
         output_params.channelCount = 2;
         output_params.device = Pa_GetDefaultOutputDevice();
-        output_params.sampleFormat = paInt16;
+        output_params.sampleFormat = paFloat32 ;
         output_params.suggestedLatency = Pa_GetDeviceInfo(output_params.device)->defaultLowInputLatency;
         output_params.hostApiSpecificStreamInfo = nullptr;
         return static_cast<bool>(Pa_IsFormatSupported(&input_params_, &output_params, sample_rate));
