@@ -117,6 +117,7 @@ set(DSP_FILES
 add_library(webrtc-dsp SHARED ${DSP_FILES})
 target_include_directories(webrtc-dsp PRIVATE webrtc)
 target_include_directories(webrtc-dsp PUBLIC webrtc/modules/audio_processing)
+target_include_directories(webrtc-dsp PUBLIC webrtc/common_audio)
 target_include_directories(webrtc-dsp PUBLIC webrtc/common_audio/include)
 target_compile_definitions(webrtc-dsp PRIVATE -DWEBRTC_POSIX)
 set_target_properties(webrtc-dsp PROPERTIES PUBLIC_HEADER

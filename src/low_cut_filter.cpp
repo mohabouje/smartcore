@@ -1,13 +1,15 @@
 #include "low_cut_filter.hpp"
 #include <edsp/filter/biquad.hpp>
-using namespace score;
 
+using namespace score;
 
 
 struct LowCutFilter::Pimpl {
 
     Pimpl(std::int32_t sample_rate, std::int8_t channels) :
-        sample_rate_(sample_rate), channels_(channels), filters_(channels) {
+        sample_rate_(sample_rate),
+        channels_(channels),
+        filters_(channels, edsp::filter::biquad<float>(1.0f, -1.0f, 0.0f, 1.0f, -0.95f, 0.0)) {
 
     }
 
