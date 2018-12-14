@@ -2,6 +2,8 @@
 #define SMARTCORE_TYPES_HPP
 
 #include <eigen3/Eigen/Core>
+#include <edsp/types/span.hpp>
+#include <edsp/types/string_view.hpp>
 #include <vector>
 #include <array>
 
@@ -43,6 +45,12 @@ namespace score {
 
     template <typename T>
     using Point = std::array<double, 3>;
+
+    template <typename T>
+    using ArrayView = edsp::span<T>;
+
+    template <typename T>
+    using StringView = edsp::string_view;
 }
 
 #endif //SMARTCORE_TYPES_HPP

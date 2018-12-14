@@ -65,8 +65,8 @@ set(DSP_FILES
         webrtc/common_audio/fir_filter_sse.cc
         webrtc/common_audio/fir_filter_factory.h
         webrtc/common_audio/fir_filter_factory.cc
-        #common_audio/smoothing_filter.h
-        #common_audio/smoothing_filter.cc
+        #webrtc/common_audio/smoothing_filter.h
+        #webrtc/common_audio/smoothing_filter.cc
         webrtc/common_audio/window_generator.h
         webrtc/common_audio/window_generator.cc
         webrtc/common_audio/real_fourier_ooura.h

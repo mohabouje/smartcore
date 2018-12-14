@@ -8,7 +8,4 @@ TEST(EchoCancellationTest, Initialization) {
     constexpr auto FrameSize = 0.01 * SampleRates::SampleRate8kHz;
     constexpr auto TailSize = 0.01 * SampleRates::SampleRate8kHz;
 
-    auto echo_canceller = std::make_unique<AEC>(SampleRates::SampleRate8kHz, InputChannels, OutputChannels,
-            FrameSize, TailSize);
-
 }

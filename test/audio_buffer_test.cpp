@@ -22,7 +22,7 @@ TEST(TestingAudioBuffer, CreateDefault) {
 }
 
 TEST(IFTestingAudioBuffer, CreateFromRawMono) {
-    std::array<std::int16_t, NumberFrames> temporal{}, restored{};
+    std::array<float, NumberFrames> temporal{}, restored{};
     std::iota(std::begin(temporal), std::end(temporal), 0);
 
     AudioBuffer buffer(SampleRate, Mono, NumberFrames, temporal.data());
@@ -34,7 +34,7 @@ TEST(IFTestingAudioBuffer, CreateFromRawMono) {
 
 
 TEST(TestInputAudioFile, CreateFromRawStereo) {
-    std::array<std::int16_t, Stereo * NumberFrames> temporal{}, restored{};
+    std::array<float, Stereo * NumberFrames> temporal{}, restored{};
     auto* ptr = temporal.data();
     for (auto i = 0ul; i < NumberFrames; ++i) {
         for (auto j = 0ul; j < Stereo; ++j) {
@@ -47,7 +47,7 @@ TEST(TestInputAudioFile, CreateFromRawStereo) {
     EXPECT_EQ(buffer.framesPerChannel(), NumberFrames);
     EXPECT_EQ(buffer.size(), Stereo * NumberFrames);
 
-    std::array<std::int16_t, NumberFrames> single{};
+    std::array<float, NumberFrames> single{};
     std::iota(std::begin(single), std::end(single), 0);
     for (auto i = 0ul; i < Stereo; ++i) {
         EXPECT_TRUE(std::equal(std::begin(single), std::end(single), buffer.channel(i)));
@@ -58,7 +58,7 @@ TEST(TestInputAudioFile, CreateFromRawStereo) {
 }
 
 TEST(TestInputAudioFile, UpdateFromRawData) {
-    std::array<std::int16_t, Stereo * NumberFrames> temporal{}, restored{};
+    std::array<float, Stereo * NumberFrames> temporal{}, restored{};
     auto* ptr = temporal.data();
     for (auto i = 0ul; i < NumberFrames; ++i) {
         for (auto j = 0ul; j < Stereo; ++j) {
@@ -73,7 +73,7 @@ TEST(TestInputAudioFile, UpdateFromRawData) {
     EXPECT_EQ(buffer.framesPerChannel(), NumberFrames);
     EXPECT_EQ(buffer.size(), Stereo * NumberFrames);
 
-    std::array<std::int16_t, NumberFrames> single{};
+    std::array<float, NumberFrames> single{};
     std::iota(std::begin(single), std::end(single), 0);
     for (auto i = 0ul; i < Stereo; ++i) {
         EXPECT_TRUE(std::equal(std::begin(single), std::end(single), buffer.channel(i)));

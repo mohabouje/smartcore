@@ -2,7 +2,6 @@
 #include <vad.hpp>
 #include <low_cut_filter.hpp>
 #include <noise_suppression.hpp>
-#include <rnn_noise_suppression.hpp>
 #include <resample.hpp>
 #include <downmix.hpp>
 #include <encoder.hpp>
@@ -26,7 +25,6 @@ int main() {
     auto vad = std::make_unique<VAD>(sample_rate, VAD::Aggressive);
     auto low_cut = std::make_unique<LowCutFilter>(sample_rate, channels);
     auto denoiser = std::make_unique<NoiseSuppression>(sample_rate, channels, NoiseSuppression::Aggressive);
-    auto rnn_denoiser = std::make_unique<DeepNoiseSuppression>(channels);
     auto downmix = std::make_unique<DownMix>();
 
     auto upsampler = std::make_unique<ReSampler>(channels, sample_rate, 48000, ReSampler::Quality::HighQuality);
@@ -50,7 +48,6 @@ int main() {
     volatile auto iteration = 1000;
     recorder->setOnProcessingBufferReady([&](AudioBuffer& recorded) {
         e_original->process(recorded);
-        rnn_denoiser->process(recorded, recorded);
         e_clean_rnn->process(recorded);
         --iteration;
     });
