@@ -23,6 +23,8 @@ file(GLOB sources
         "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 
 set(libraries
+        aubio
+        maximilian
         webrtc-noise
         webrtc-dsp
         webrtc-agc

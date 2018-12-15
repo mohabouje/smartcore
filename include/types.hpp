@@ -28,6 +28,15 @@ namespace score {
         SampleRate48kHz = 48000
     };
 
+
+    enum FrequencyUnit {
+        Hz,
+        Midi,
+        Cent,
+        Bin
+    };
+
+
     constexpr auto MaxFloatS16 = std::numeric_limits<std::int16_t>::max();
     constexpr auto MinFloatS16 = std::numeric_limits<std::int16_t>::min();
 

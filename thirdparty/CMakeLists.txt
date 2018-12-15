@@ -5,6 +5,15 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+
+add_library(maximilian SHARED maximilian/maximilian.h maximilian/maximilian.cpp)
+target_include_directories(maximilian PUBLIC maximilian)
+install(TARGETS maximilian
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/smartmeet/core/")
+
+
 set(SYSTEM_FILES
         webrtc/system_wrappers/include/metrics.h
         webrtc/system_wrappers/source/metrics.cc
@@ -22,6 +31,10 @@ set(SYSTEM_FILES
 add_library(webrtc-system SHARED ${SYSTEM_FILES})
 target_include_directories(webrtc-system PRIVATE webrtc)
 target_compile_definitions(webrtc-system PRIVATE -D__native_client__ -DWEBRTC_APM_DEBUG_DUMP=0 -DWEBRTC_POSIX -DWEBRTC_LINUX)
+install(TARGETS webrtc-system
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/smartmeet/core/")
 
 set(UTIL_FILES
         webrtc/modules/audio_processing/utility/block_mean_calculator.h
@@ -39,6 +52,10 @@ set(UTIL_FILES
 add_library(webrtc-utility SHARED ${UTIL_FILES})
 target_include_directories(webrtc-utility PRIVATE webrtc)
 target_compile_definitions(webrtc-utility PRIVATE -D__native_client__ -DWEBRTC_APM_DEBUG_DUMP=0 -DWEBRTC_POSIX -DWEBRTC_LINUX)
+install(TARGETS webrtc-utility
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/smartmeet/core/")
 
 set(RESAMPLER_FILES
         webrtc/common_audio/resampler/include/resampler.h
@@ -54,7 +71,10 @@ set(RESAMPLER_FILES
 add_library(webrtc-resample SHARED ${UTIL_FILES})
 target_include_directories(webrtc-resample PRIVATE webrtc)
 target_compile_definitions(webrtc-resample PRIVATE -D__native_client__ -DWEBRTC_APM_DEBUG_DUMP=0 -DWEBRTC_POSIX -DWEBRTC_LINUX)
-
+install(TARGETS webrtc-resample
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/smartmeet/core/")
 
 set(DSP_FILES
         webrtc/common_audio/ring_buffer.h
