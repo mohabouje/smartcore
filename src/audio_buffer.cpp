@@ -1,5 +1,6 @@
 #include "audio_buffer.hpp"
 #include <iostream>
+#include <audio_buffer.hpp>
 
 
 using namespace score;
@@ -109,5 +110,13 @@ float *AudioBuffer::data() {
 
 const float *AudioBuffer::data() const {
     return channel(0);
+}
+
+FrameType AudioBuffer::type() const {
+    return type_;
+}
+
+void AudioBuffer::setType(FrameType type) {
+    type_ = type;
 }
 

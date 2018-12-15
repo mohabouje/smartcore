@@ -9,6 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(GTest REQUIRED)
 set(SOURCE_FILES
         testing_gtest.cpp
+        tdoa_test.cpp
         audio_buffer_test.cpp
         acoustic_echo_canceller_test.cpp
         level_test.cpp)

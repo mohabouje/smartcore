@@ -67,7 +67,7 @@ add_library(${PROJECT_NAME} SHARED ${sources})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${libraries})
 target_include_directories(${PROJECT_NAME} PRIVATE ${include_dirs})
 target_include_directories(${PROJECT_NAME} PUBLIC include/)
-target_include_directories(${PROJECT_NAME} PRIVATE thirdparty/webrtc/)
+target_include_directories(${PROJECT_NAME} PRIVATE thirdparty/webrtc/ thirdparty/beamforming)
 target_compile_options(${PROJECT_NAME} PRIVATE -DUSE_LIBSAMPLERATE -DUSE_LIBSNDFILE -DUSE_LIBFFTW)
 target_compile_options(${PROJECT_NAME} PRIVATE -DWEBRTC_POSIX)
 

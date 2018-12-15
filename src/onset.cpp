@@ -89,7 +89,7 @@ struct Onset::Pimpl {
         }
 
         if (1 != input.channels()) {
-            throw std::invalid_argument("The PitchTracker is configure to work with "
+            throw std::invalid_argument("The Onset is configured to work with "
                                         + std::to_string(1) + " channels.");
         }
 

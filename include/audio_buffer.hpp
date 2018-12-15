@@ -109,6 +109,19 @@ namespace score {
         std::size_t size() const;
 
         /**
+         * @brief Returns the type of the frame
+         * @see FrameType
+         * @return Type of the frame
+         */
+        FrameType type() const;
+
+        /**
+         * @brief Set the type of the frame
+         * @param type Type of frame
+         */
+        void setType(FrameType type);
+
+        /**
          * @brief Returns the buffer of the given channel.
          * @param channel Desired channel.
          * @return The channel's buffer.
@@ -158,6 +171,7 @@ namespace score {
          void toInterleave(float* data) const;
 
     private:
+        FrameType type_{FrameType::Unknown};
         double timestamp_{};
         std::int32_t sample_rate_{};
         std::int8_t channels_{};
