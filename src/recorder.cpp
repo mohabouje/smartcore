@@ -1,6 +1,7 @@
 
 #include "recorder.hpp"
 #include <portaudio.h>
+#include <iostream>
 
 using namespace score;
 
@@ -247,6 +248,34 @@ void score::Recorder::Initialize() {
     const auto err = Pa_Initialize();
     if (err != paNoError) {
         throw std::runtime_error(Pa_GetErrorText(err));
+    }
+
+}
+
+
+Recorder::DeviceInfo score::Recorder::DeviceInformation(std::int32_t index) {
+    const auto* device = Pa_GetDeviceInfo(index);
+    return DeviceInfo{name : device->name,
+            maxInputChannels : device->maxInputChannels,
+            maxOutputChannels : device->maxOutputChannels,
+            defaultSampleRate : device->defaultSampleRate};
+}
+
+void score::Recorder::AvailableDevices() {
+    for (auto i = 0ul; i < Pa_GetDeviceCount(); ++i) {
+        const auto* device = Pa_GetDeviceInfo(i);
+        const auto info = DeviceInfo{name : device->name,
+                maxInputChannels : device->maxInputChannels,
+                maxOutputChannels : device->maxOutputChannels,
+                defaultSampleRate : device->defaultSampleRate};
+
+        std::cout << "Device Information" << std::endl;
+        std::cout << "Index: " << i << std::endl;
+        std::cout << "Name: " << info.name << std::endl;
+        std::cout << "Available Input Channels: " << info.maxInputChannels << std::endl;
+        std::cout << "Available Output Channels: " << info.maxOutputChannels << std::endl;
+        std::cout << "Default Sample rate: " << info.defaultSampleRate << std::endl;
+        std::cout << std::endl << std::endl;
     }
 }
 

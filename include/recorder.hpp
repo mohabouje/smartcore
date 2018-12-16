@@ -10,6 +10,24 @@ namespace score {
 
     class Recorder {
     public:
+        struct DeviceInfo {
+            const char *name;
+            int maxInputChannels;
+            int maxOutputChannels;
+            double defaultSampleRate;
+        } ;
+
+        /**
+         * @brief Returns the default information about a device
+         * @param index Index of the device
+         * @return DeviceInfo struct holding some of the basic information about the device
+         */
+        static DeviceInfo DeviceInformation(std::int32_t index);
+
+        /**
+         * @brief Prints the information about all the available devices.
+         */
+        static void AvailableDevices();
 
         /**
          * @brief Returns the default input device index.

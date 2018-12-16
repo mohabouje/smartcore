@@ -32,6 +32,7 @@ set(libraries
         webrtc-red
         webrtc-rnn-vad
         fvad
+        usb-1.0
         ${FFTW_FLOAT_LIB}
         ${SNDFILE_LIBRARIES}
         ${SAMPLERATE_LIBRARIES}

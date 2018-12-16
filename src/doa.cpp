@@ -4,12 +4,15 @@
 #include <edsp/spectral/dft.hpp>
 #include <complex>
 #include <algorithm>
+#include <tdoa.h>
 
 
 using namespace score;
 struct DOA::Pimpl {
 
-    explicit Pimpl(std::int32_t sample_rate, float microphone_distances = 0.08127, float sound_speed = 343.2f) :
+    explicit Pimpl(std::int32_t sample_rate, std::uint8_t num_microphones,
+            float microphone_distances, float sound_speed) :
+            num_microphones_(num_microphones),
             maximum_tau_(microphone_distances / sound_speed),
             sample_rate_(sample_rate),
             microphone_distances_(microphone_distances),
@@ -18,7 +21,7 @@ struct DOA::Pimpl {
     }
 
     ~Pimpl() {
-        reset();
+
     }
 
     void reset() {
@@ -27,14 +30,15 @@ struct DOA::Pimpl {
 
     float gccPhat(const float* signal, const float* reference, size_t size) {
         const auto expected_size = 2 * size;
-        if (expected_size != fft_size_) {
-            reset();
-            fft_size_ = (size_t) expected_size;
+        if (expected_size != gcc_size_) {
+            gcc_size_ = (size_t) expected_size;
+
+            const auto nfft = edsp::spectral::make_fft_size(gcc_size_);
             signal_.resize(expected_size, 0);
-            signal_spectrum_.resize(expected_size);
             reference_.resize(expected_size, 0);
-            reference_.resize(expected_size);
-            gcc_.resize(expected_size);
+            gcc_.resize(expected_size, 0);
+            signal_spectrum_.resize(nfft, 0);
+            reference_spectrum_.resize(nfft, 0);
         }
 
         std::copy(signal, signal + size, signal_.data());
@@ -56,14 +60,13 @@ struct DOA::Pimpl {
         const auto maximum_tau_index = static_cast<std::size_t >(sample_rate_ * maximum_tau_);
         const auto max_shift = std::min(expected_size / 2, maximum_tau_index);
         const auto lambda = [](const auto left, const auto right) { return std::abs(left) < std::abs(right); };
-        const auto maximum_left = std::max_element(gcc_.begin(), gcc_.begin() + max_shift, lambda);
+        const auto maximum_left = std::max_element(gcc_.begin(), gcc_.begin() + max_shift + 1, lambda);
         const auto maximum_right = std::max_element(gcc_.end() - max_shift, gcc_.end(), lambda);
         const auto shift = std::distance(gcc_.begin(),
                 *maximum_left > *maximum_right ? maximum_left : maximum_right) - max_shift;
 
-        return shift / sample_rate_;
+        return static_cast<float>(shift) / sample_rate_;
     }
-
 
     float computeDOA() {
         const auto min_index = std::distance(tau_.begin(), std::min_element(tau_.begin(), tau_.end()));
@@ -78,6 +81,14 @@ struct DOA::Pimpl {
     }
 
     float process(const AudioBuffer& microphone_inputs) {
+        if (num_microphones_ != microphone_inputs.channels()) {
+            throw std::runtime_error("Expected: " + std::to_string(num_microphones_) + " microphones");
+        }
+
+        if (tau_.empty()) {
+            throw std::runtime_error("Empty group of microphones");
+        }
+
         for (auto i = 0ul, size = tau_.size(); i < size; ++i) {
             const auto group = microphone_groups_[i];
             tau_[i] = gccPhat(microphone_inputs.channel(group.first),
@@ -102,17 +113,17 @@ struct DOA::Pimpl {
     std::vector<int> theta_;
     std::vector<std::complex<float>> signal_spectrum_{};
     std::vector<std::complex<float>> reference_spectrum_{};
-    std::vector<std::complex<float>> gcc_spectrum_{};
     std::vector<std::pair<std::size_t, std::size_t>> microphone_groups_{};
-    std::size_t fft_size_{0};
+    std::size_t gcc_size_{0};
     std::int32_t sample_rate_{};
+    std::uint8_t num_microphones_{};
     float maximum_tau_{};
     float microphone_distances_{};
     float sound_speed_{};
 };
 
-DOA::DOA(std::int32_t sample_rate, float microphone_distances, float sound_speed) :
-    pimpl_(std::make_unique<Pimpl>(sample_rate, microphone_distances, sound_speed)){
+DOA::DOA(std::int32_t sample_rate, std::uint8_t num_microphones, float microphone_distances, float sound_speed) :
+    pimpl_(std::make_unique<Pimpl>(sample_rate, num_microphones, microphone_distances, sound_speed)){
 
 }
 

@@ -15,7 +15,8 @@ namespace score {
          * @param microphone_distances Distances between microphones.
          * @param sound_speed Sound of the speed in m/sec.
          */
-        explicit DOA(std::int32_t sample_rate, float microphone_distances = 0.08127, float sound_speed = 343.2f);
+        explicit DOA(std::int32_t sample_rate, std::uint8_t num_microphones,
+                float microphone_distances = 0.08127, float sound_speed = 343.2f);
 
         /**
          * @brief Default destructor

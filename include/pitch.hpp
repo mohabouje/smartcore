@@ -7,7 +7,7 @@
 namespace score {
 
     class Pitch {
-
+    public:
         /**
          * The method enum represents a list of the pitch detection
          * methods currently available.
