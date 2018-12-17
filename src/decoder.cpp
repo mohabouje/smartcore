@@ -17,10 +17,6 @@ struct Decoder::Pimpl {
 
 
     void process(AudioBuffer &output, std::size_t size) {
-        if (output.channels() != decoder_.channels()) {
-            throw std::runtime_error("Expected an output buffer of "
-                                     + std::to_string(decoder_.channels()) + " channels.");
-        }
 
         interleave_.resize(size);
         decoder_.read(std::begin(interleave_), std::end(interleave_));

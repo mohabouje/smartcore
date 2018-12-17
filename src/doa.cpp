@@ -8,6 +8,11 @@
 
 
 using namespace score;
+
+const auto abs_compare = [](const auto left, const auto right) {
+    return std::abs(left) < std::abs(right);
+};
+
 struct DOA::Pimpl {
 
     explicit Pimpl(std::int32_t sample_rate, std::uint8_t num_microphones,
@@ -28,6 +33,7 @@ struct DOA::Pimpl {
 
     }
 
+    // http://www.xavieranguera.com/phdthesis/node40.html
     float gccPhat(const float* signal, const float* reference, size_t size) {
         const auto expected_size = 2 * size;
         if (expected_size != gcc_size_) {
@@ -59,17 +65,21 @@ struct DOA::Pimpl {
 
         const auto maximum_tau_index = static_cast<std::size_t >(sample_rate_ * maximum_tau_);
         const auto max_shift = std::min(expected_size / 2, maximum_tau_index);
-        const auto lambda = [](const auto left, const auto right) { return std::abs(left) < std::abs(right); };
-        const auto maximum_left = std::max_element(gcc_.begin(), gcc_.begin() + max_shift + 1, lambda);
-        const auto maximum_right = std::max_element(gcc_.end() - max_shift, gcc_.end(), lambda);
-        const auto shift = std::distance(gcc_.begin(),
-                *maximum_left > *maximum_right ? maximum_left : maximum_right) - max_shift;
 
-        return static_cast<float>(shift) / sample_rate_;
+        const auto maximum_left = std::max_element(gcc_.begin(), gcc_.begin() + max_shift + 1, abs_compare);
+        const auto maximum_right = std::max_element(gcc_.end() - max_shift, gcc_.end(), abs_compare);
+
+        if (*maximum_left > *maximum_right) {
+            const auto shift = std::distance(gcc_.begin(), maximum_left) + max_shift;
+            return static_cast<float>(shift - max_shift) / sample_rate_;
+        } else {
+            const auto shift = std::distance(gcc_.end() - max_shift, maximum_right);
+            return static_cast<float>(shift - max_shift) / sample_rate_;
+        }
     }
 
     float computeDOA() {
-        const auto min_index = std::distance(tau_.begin(), std::min_element(tau_.begin(), tau_.end()));
+        const auto min_index = std::distance(tau_.begin(), std::min_element(tau_.begin(), tau_.end(), abs_compare));
         auto best_guess = 0;
         if ((min_index != 0 and theta_[min_index - 1] >= 0) or (min_index == 0 and theta_.back() < 0)) {
             best_guess = (theta_[min_index] + 360) % 360;

@@ -2,6 +2,7 @@
 #include <doa.hpp>
 #include <gain.hpp>
 #include <encoder.hpp>
+#include <channel_remove.hpp>
 #include <pixel_ring.hpp>
 
 #include <iostream>
@@ -13,8 +14,6 @@ namespace po = boost::program_options;
 
 int main(int ac, char* av[]) {
     Recorder::Initialize();
-    Recorder::AvailableDevices();
-
     std::string filename;
     std::int32_t sample_rate;
     std::int32_t device_index;
@@ -25,7 +24,7 @@ int main(int ac, char* av[]) {
     po::options_description desc("Recording options");
     desc.add_options()
             ("help, h", "Help message")
-            ("duration, d", po::value<std::size_t >(&duration)->default_value(10000),
+            ("duration, d", po::value<std::size_t >(&duration)->default_value(100000),
                     "Duration of the recording in milliseconds.")
             ("sample-rate, sr", po::value<std::int32_t>(&sample_rate)->default_value(16000),
                     "Sampling frequency in Hz. Default: 16000Hz")
@@ -54,33 +53,44 @@ int main(int ac, char* av[]) {
     std::cout << "Default Sample rate: " << info.defaultSampleRate << std::endl;
 
 
-    AudioBuffer data(sample_rate), downmixed;
-    const auto valid_channels = channels - 1;
-    const auto frames_per_buffer = 0.01 * sample_rate;
+    const auto frames_per_buffer = 0.2 * sample_rate;
+
+    auto remove = std::make_unique<ChannelRemove>(channels);
+    remove->ignore(0);
+    remove->ignore(static_cast<uint8_t>(channels - 1));
+
+
+    //auto pixel = std::make_unique<PixelRing>(vid, pid);
+    auto recorder = std::make_unique<Recorder>(sample_rate, channels, device_index, frames_per_buffer);
+    auto gain = std::make_unique<Gain>(3);
+    auto encoder6 = std::make_unique<Encoder>("recorded_6ch.wav", sample_rate, channels);
+    auto encoder4 = std::make_unique<Encoder>("recorded_4ch.wav", sample_rate, remove->remaining());
 
     const std::vector<std::pair<std::size_t, std::size_t>> groups = {{0, 2}, {1, 3}};
-    auto doa = std::make_unique<DOA>(sample_rate, valid_channels);
+    auto doa = std::make_unique<DOA>(sample_rate, remove->remaining());
     doa->setGroupMicrophones(groups);
 
-    auto gain = std::make_unique<Gain>(3);
-    auto pixel = std::make_unique<PixelRing>(vid, pid);
-    auto encoder = std::make_unique<Encoder>("recorded.wav", sample_rate, channels);
-    volatile auto iterations = static_cast<std::uint64_t >(duration) / 10;
+    const auto total = static_cast<std::uint64_t >(duration) / 200;
+    volatile auto iterations = total;
+
+    AudioBuffer data;
     const auto processing = [&](AudioBuffer& recorded) {
-        data.fromInterleave(valid_channels, recorded.framesPerChannel(), recorded.data() + recorded.framesPerChannel());
+        encoder6->process(recorded);
+        remove->process(recorded, data);
         gain->process(data, data);
-        pixel->setAngle(doa->process(data), 255, 255, 255);
-        encoder->process(recorded);
-        --iterations;
+        encoder4->process(data);
+
+        std::cout << "\r" << "Recording: " << 100 * static_cast<float>(total - --iterations) / total
+        << "% DOA: " << doa->process(data) << std::flush;
+
     };
 
-    auto recorder = std::make_unique<Recorder>(sample_rate, channels, device_index, frames_per_buffer);
     recorder->setOnRecordingStarted([](){ std::cout << "Recording started" << std::endl;  });
-    recorder->setOnRecordingStopped([]() {  std::cout << "Recording stopped" << std::endl;  });
+    recorder->setOnRecordingStopped([]() {  std::cout << std::endl << "Recording stopped" << std::endl;  });
     recorder->setOnProcessingBufferReady(processing);
     recorder->record();
+    while (iterations) {}
+    recorder->stop();
 
-    while (iterations) {
-    }
     return 0;
 }

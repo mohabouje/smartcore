@@ -18,3 +18,6 @@ target_link_libraries(smartcore-position PRIVATE smartcore ${Boost_LIBRARIES})
 
 add_executable(smartcore-led led.cpp)
 target_link_libraries(smartcore-led PRIVATE smartcore ${Boost_LIBRARIES})
+
+add_executable(smartcore-ls ls.cpp)
+target_link_libraries(smartcore-ls PRIVATE smartcore ${Boost_LIBRARIES})
